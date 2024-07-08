@@ -1,8 +1,9 @@
 # SMILES Generator using DeepSMILES LSTM and Siamese Network
 
-# SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation
-
 The first part of this project involves a Generator for generating SMILES (Simplified Molecular Input Line Entry System) strings using a combined deep learning model. The model leverages deepSMILES, a more compact representation of SMILES and augmented by a Siamese network to enhance the generation process of the LSTM (Long Short Term Model) by combining the Loss function of the base LSTM Model with the Loss function of the Siamese Network to improve the output of the LSTM and ensure similarity to a target class of molecules.
+
+
+# SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation
 
 The second part of this project involves a Predictor. The machine learning model is a Multi-Layer Perceptron (MLP) designed to predict whether a given molecule is an AXL kinase inhibitor based on its SMILES representation. The model leverages various molecular descriptors and Morgan fingerprints to classify the molecules.
 
@@ -12,7 +13,7 @@ The second part of this project involves a Predictor. The machine learning model
 2. [Project Structure](#project-structure)
 3. [Setup and Installation](#setup-and-installation)
 
-4. SMILES Generator using DeepSMILES LSTM and Siamese Network
+4. **SMILES Generator using DeepSMILES LSTM and Siamese Network**
     1. [Data Preparation](#data-preparation)
     2. [Model Training](#model-training)
     3. [Siamese Network Training](#siamese-network-training)
@@ -20,7 +21,7 @@ The second part of this project involves a Predictor. The machine learning model
     5. [Usage](#usage)
     6. [Parameters](#parameters)
 
-5. SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation
+5. **SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation**
     1. [Data Preparation](#data-preparation)
     2. [Model Training](#model-training)
     3. [Siamese Network Training](#siamese-network-training)
@@ -83,99 +84,100 @@ The second part of this project involves a Predictor. The machine learning model
 
 The FixedVocabulary class defines a fixed set of tokens for encoding SMILES sequences.
 
->
-        > ```bash
-        >
-        >   'PAD':      0,       # Padding token (for filling batches of unequal length)
-        >   'UNK':      1,       # Undefined token (for unknown elements)
-        >   '^':        2,       # Start token
-        >   '$':        3,       # End token
-        >   '3':        4,
-        >   '4':        5,
-        >   '5':        6,
-        >   '6':        7,
-        >   '7':        8,
-        >   '8':        9,
-        >   '9':        10,
-        >   '%10':      11,
-        >   '%11':      12,
-        >   '%12':      13,
-        >   '%13':      14,
-        >   '%14':      15,
-        >   '%15':      16,
-        >   '%16':      17,
-        >   '%17':      18,
-        >   '%18':      19,
-        >   '%19':      20,
-        >   '%20':      21,
-        >   '%21':      22,
-        >   '%22':      23,
-        >   '%23':      24,
-        >   '%24':      25,
-        >   ')':        26,
-        >   '=':        27,
-        >   '#':        28,
-        >   '.':        29,
-        >   '-':        30,
-        >   '/':        31,
-        >   '\\':       32, 
-        >   'n':        33,
-        >   'o':        34,
-        >   'c':        35,
-        >   's':        36,
-        >   'N':        37,
-        >   'O':        38,
-        >   'C':        39,
-        >   'S':        40,
-        >   'F':        41,
-        >   'P':        42,
-        >   'I':        43,
-        >   'B':        44,
-        >   'Br':       45,
-        >   '[C@]':     47,
-        >   '[C@H]':    48,
-        >   '[C@@]':    50,
-        >   '[nH]':     51,
-        >   '[O-]':     52,
-        >   '[N+]':     53,
-        >   '[n+]':     54,
-        >   '[Na+]':    55,
-        >   '[S+]':     56,
-        >   '[Br-]':    57,
-        >   '[I-]':     59,
-        >   '[N-]':     60,
-        >   '[Si]':     61,
-        >   '[2H]':     62,
-        >   '[K+]':     63,
-        >   '[Se]':     64,
-        >   '[P+]':     65,
-        >   '[C-]':     66,
-        >   '[se]':     67,
-        >   '[Cl+3]:':  68,
-        >   '[Li+]:':   69,      
-> ```
+```bash
+        
+        
+           'PAD':      0,       # Padding token (for filling batches of unequal length)
+           'UNK':      1,       # Undefined token (for unknown elements)
+           '^':        2,       # Start token
+           '$':        3,       # End token
+           '3':        4,
+           '4':        5,
+           '5':        6,
+           '6':        7,
+           '7':        8,
+           '8':        9,
+           '9':        10,
+           '%10':      11,
+           '%11':      12,
+           '%12':      13,
+           '%13':      14,
+           '%14':      15,
+           '%15':      16,
+           '%16':      17,
+           '%17':      18,
+           '%18':      19,
+           '%19':      20,
+           '%20':      21,
+           '%21':      22,
+           '%22':      23,
+           '%23':      24,
+           '%24':      25,
+           ')':        26,
+           '=':        27,
+           '#':        28,
+           '.':        29,
+           '-':        30,
+           '/':        31,
+           '\\':       32, 
+           'n':        33,
+           'o':        34,
+           'c':        35,
+           's':        36,
+           'N':        37,
+           'O':        38,
+           'C':        39,
+           'S':        40,
+           'F':        41,
+           'P':        42,
+           'I':        43,
+           'B':        44,
+           'Br':       45,
+           '[C@]':     47,
+           '[C@H]':    48,
+           '[C@@]':    50,
+           '[nH]':     51,
+           '[O-]':     52,
+           '[N+]':     53,
+           '[n+]':     54,
+           '[Na+]':    55,
+           '[S+]':     56,
+           '[Br-]':    57,
+           '[I-]':     59,
+           '[N-]':     60,
+           '[Si]':     61,
+           '[2H]':     62,
+           '[K+]':     63,
+           '[Se]':     64,
+           '[P+]':     65,
+           '[C-]':     66,
+           '[se]':     67,
+           '[Cl+3]:':  68,
+           '[Li+]:':   69,      
+```
 
 > [!TIP]
 If you need to update or change the FixedVocabulary you can use the sript in /src/Vocabulary_Creator.ipynb to analyze a file with SMILES and see which Tokens are used and how many of them are included to create a updated Vocabulary but for most use cases this Vocabulary should be fine.
 
+
 ## Tokanizer
 
-The DeepSMILESTokenizer class handles the transformation of SMILES into deepSMILES and performs tokenization and untokenization.
+- The DeepSMILESTokenizer class handles the transformation of SMILES into deepSMILES and performs tokenization and untokenization.
 
-The DeepSMILESTokenizer class uses several regular expressions to tokenize deepSMILES strings. Each regex pattern is designed to match specific components of a SMILES string. Below are the regex patterns used and their purposes:
+- The DeepSMILESTokenizer class uses several regular expressions to tokenize deepSMILES strings. Each regex pattern is designed to  match specific components of a SMILES string. Below are the regex patterns used and their purposes:
 
-        - This pattern groups characters within square brackets together, which can represent charged atoms or specific configurations in the SMILES syntax.
+    - This pattern groups characters within square brackets together, which can represent charged atoms or specific configurations in the SMILES syntax.
 
-        - This pattern matches numbers up to two digits preceded by a percent sign ("%"), used to denote ring closures in molecules with more than 9 rings.
+    - This pattern matches numbers up to two digits preceded by a percent sign ("%"), used to denote ring closures in molecules with more than 9 rings.
 
-        - This pattern matches the halogen atoms bromine ("Br") and chlorine ("Cl"), ensuring they are recognized as unique tokens in the SMILES string. They are essential in drug molecules.
+    - This pattern matches the halogen atoms bromine ("Br") and chlorine ("Cl"), ensuring they are recognized as unique tokens in the SMILES string. They are essential in drug molecules.
 
->
-> ```bash
->       "brackets": re.compile(r"(\[[^\]]*\])"),
->       "2_ring_nums": re.compile(r"(%\d{2})"),
->       "brcl": re.compile(r"(Br|Cl)")
-> ```
+
+ ```bash
+       "brackets": re.compile(r"(\[[^\]]*\])"),
+       "2_ring_nums": re.compile(r"(%\d{2})"),
+       "brcl": re.compile(r"(Br|Cl)")
+ ```
 
 
 ## Define the LSTM Model (RNN)
