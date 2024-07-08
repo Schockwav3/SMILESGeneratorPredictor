@@ -84,9 +84,7 @@ The second part of this project involves a Predictor. The machine learning model
 
 The FixedVocabulary class defines a fixed set of tokens for encoding SMILES sequences.
 
-```bash
-        
-        
+```bash  
            'PAD':      0,       # Padding token (for filling batches of unequal length)
            'UNK':      1,       # Undefined token (for unknown elements)
            '^':        2,       # Start token
@@ -166,11 +164,11 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 - The DeepSMILESTokenizer class uses several regular expressions to tokenize deepSMILES strings. Each regex pattern is designed to  match specific components of a SMILES string. Below are the regex patterns used and their purposes:
 
-    - This pattern groups characters within square brackets together, which can represent charged atoms or specific configurations in the SMILES syntax.
+    - `brackets` groups characters within square brackets together, which can represent charged atoms or specific configurations in the SMILES syntax.
 
-    - This pattern matches numbers up to two digits preceded by a percent sign ("%"), used to denote ring closures in molecules with more than 9 rings.
+    - `2_ring_nums` matches numbers up to two digits preceded by a percent sign ("%"), used to denote ring closures in molecules with more than 9 rings.
 
-    - This pattern matches the halogen atoms bromine ("Br") and chlorine ("Cl"), ensuring they are recognized as unique tokens in the SMILES string. They are essential in drug molecules.
+    - `brcl` matches the halogen atoms bromine ("Br") and chlorine ("Cl"), ensuring they are recognized as unique tokens in the SMILES string. They are essential in drug molecules.
 
 
  ```bash
