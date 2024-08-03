@@ -1,0 +1,19 @@
+name: PredictorGenerator
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9  # Python Version (anpassen, wenn andere Version benötigt wird)
+  - cudatoolkit=12.5  # CUDA Version (anpassen, wenn andere Version benötigt wird)
+  - numpy
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - rdkit
+  - tqdm
+  - pytorch
+  - torchvision
+  - pip
+  - pip:
+    - torchmetrics
+    - deepsmiles

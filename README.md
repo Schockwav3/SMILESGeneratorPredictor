@@ -1,19 +1,133 @@
-# SMILES Generator using DeepSMILES LSTM and Siamese Network
+# SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with the SMILES Predictor
 
-The first part of this project involves a Generator for generating SMILES (Simplified Molecular Input Line Entry System) strings using a combined deep learning model. The model leverages deepSMILES, a more compact representation of SMILES and augmented by a Siamese network to enhance the generation process of the LSTM (Long Short Term Model) by combining the Loss function of the base LSTM Model with the Loss function of the Siamese Network to improve the output of the LSTM and ensure similarity to a target class of molecules.
+The first part of this project involves a Generator for generating specified SMILES (Simplified Molecular Input Line Entry System) strings using a combined deep learning model. The model leverages deepSMILES, a more compact representation of SMILES and augment it with the SMILES Predictor MLP to enhance the generation process of the LSTM (Long Short Term Model). By combining the base trained LSTM Model with the classification of the SMILES Predictor as Reinforment Learning approach to improve the output of the LSTM and ensure similarity to a target class of molecules.
 
 
-# SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation
+# SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for classification
 
 The second part of this project involves a Predictor. The machine learning model is a Multi-Layer Perceptron (MLP) designed to predict whether a given molecule is an AXL kinase inhibitor based on its SMILES representation. The model leverages various molecular descriptors and Morgan fingerprints to classify the molecules.
 
 
+
+
 ## Table of Contents
+
+1. [Introduction](#introduction)
+1. [Setup and Installation](#setup-and-installation)
 1. [Requirements](#requirements)
 2. [Project Structure](#project-structure)
-3. [Setup and Installation](#setup-and-installation)
+3. [Workflow](#workflow)
+4. [SMILES Generator](#smiles-generator)
+5. [SMILES Predictor](#smiles-predictor)
 
-4. **SMILES Generator using DeepSMILES LSTM and Siamese Network**
+
+
+
+## Introduction
+
+The combined approach makes it possible to generate not only a large number of syntactically correct and chemically valid SMILES, but also those that have a high probability of possessing relevant chemical properties. This is done by initially modelling a large number of SMILES data with the SMILES Generator (phase 1) and then fine-tuning them by means of value-driven optimisation using the SMILES Predictor (phase 2). In addition, generated molecules can then be validated separately with the SMILES Predictor for a final quality check (phase 3). This method can be particularly useful in drug design to discover new, potentially effective molecules.
+
+
+
+
+## Setup and Installation
+
+**Conda**
+
+   - Please check out the [Conda Documentation](https://github.com/conda/conda-docs).
+
+   - To execute all tasks in one single conda environment the `GeneratorPredictor.yaml` contains all required packages and the corresponding channels
+   
+
+     > Note: If you want to update your current environment manually you should add the following **conda packages**:
+       >
+       > ```bash   
+       > - python
+       > - cudatoolkit
+       > - numpy
+       > - pandas
+       > - matplotlib
+       > - scikit-learn
+       > - rdkit
+       > - tqdm
+       > - pytorch
+       > - torchvision
+       > - torchmetrics
+       > - deepsmiles
+       > ```
+
+
+   - Otherwise navigate to the location of the pulled AMA.yaml file and execute `conda env create -f GeneratorPredictor.yaml`
+
+
+   - To activate the created conda environmentconda and getting started execute `conda activate GeneratorPredictor`
+
+
+
+
+## Requirements
+
+- Set up all required data
+
+- **Phase 1 SMILES Generator**
+
+   - You need the input **chembl_smiles.txt** containing the 1.8 million small molecule compounds from the ChEMBL database. This is the dataset what I used to lead the SMILES Predictor to train the vocabular and the basic structure of molecules. It is already in the repository. If you want to use a different dataset for training feel free to change it in your project and update the `file_path`. 
+   
+> Note: The defined vocabulary is adjusted to the components of the molecules that occur most frequently in this data set. I have written and added a script `Vocabulary_Creator` that analyses other datasets and outputs which vocabulars are most common. With this information you can extend the vocabulary if necessary. 
+
+   - Once the network has been pretrained on the basic dataset, it will be saved under the `save_model_path` and can then be further trained for Transfer Learning or phase 2.
+
+
+> Note: It is also possible to use **Transfer Learning** to a second more specific dataset of SMILES. To do this, simply save the model after the first training and activate `use_pretrained_model = True`, adjust the parameters, define the second / new dataset as new `file_path` and run the code again.
+
+
+- **Phase 2 SMILES Generator**
+
+   - First you need the pretrained SMILES Generator model from phase 1, simply enter the path under `trained_lstm_path` in the second part of the code.
+
+   - Then you need the pretrained SMILES Predictor model which you will also need in phase 3 for classification. Simply pause here and prepare the learning for the predictor model. Afterwards simply enter the path under `trained_mlp_path` in the second part of the code.
+
+   - Once the network has been finally trained, it will be saved under `save_model_path` in the second part of the code. The fully trained SMILES Generator model can then be used to generate specific SMILES.
+
+
+- **Phase 3 SMILES Predictor**
+
+   -  You need two files as input. One file **smiles_data** containing different generic molecules enter the path under `smiles_data_path` and one file with targets **smiles_axl_inhibitors** that the model should learn to predict. In this case, we want to train the model to distinguish whether a molecule is an AXL kinase inhibitor or not. Update the path under `smiles_axl_inhibitors_path`.
+
+    Target = 1: AXL kinase inhibitor
+    Target = 0: Other molecules
+
+> Note: You should search for as much target SMILES for your prediction class input as possible. In my example I found a total of 4564 on ChEMBL and NIH. For the generic smiles data I took a ratio of around 1:2 so a total of 10812 random non target SMILES. 
+
+
+   - Once the network has been trained, it will be saved under `save_model_path`. The trained SMILES Predictor model can then be used to classify SMILES.
+
+
+
+
+## Project Structure
+
+This will give you a complete overview of the **SMILES GeneratorPredictor** project structure, all existing scripts in the repository and all required files:
+
+![Project Structure](https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/project_structure.png)
+
+
+
+
+## Workflow
+
+This will give you a complete overview of the **SMILES GeneratorPredictor** Workflow:
+
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/workflow.png" width="600" height="1360">
+
+
+
+
+
+
+
+
+4. **SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with the SMILES Predictor**
     1. [Data Preparation](#data-preparation)
     2. [Model Training](#model-training)
     3. [Siamese Network Training](#siamese-network-training)
@@ -21,7 +135,7 @@ The second part of this project involves a Predictor. The machine learning model
     5. [Usage](#usage)
     6. [Parameters](#parameters)
 
-5. **SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation**
+5. **SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for classification**
     1. [Data Preparation](#data-preparation)
     2. [Model Training](#model-training)
     3. [Siamese Network Training](#siamese-network-training)
@@ -30,6 +144,11 @@ The second part of this project involves a Predictor. The machine learning model
     6. [Parameters](#parameters)
 
 6. [References](#references)
+
+
+
+
+
 
 
 ## Requirements
@@ -66,7 +185,7 @@ The second part of this project involves a Predictor. The machine learning model
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/Schockwav3/SMILESGeneratorValidator.git
+    git clone https://github.com/Schockwav3/SMILESGeneratorPredictor.git
     cd smiles-generation
     ```
 
@@ -77,7 +196,7 @@ The second part of this project involves a Predictor. The machine learning model
 
 
 
-## SMILES Generator using DeepSMILES LSTM and Siamese Network
+## SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with the SMILES Predictor
 
 
 ## Define the Vocabulary
@@ -442,3 +561,9 @@ The models generate SMILES strings based on the training data and validate their
 - RDKit: Open-source cheminformatics software.
 - DeepSMILES: An alternative compact representation of SMILES.
 - PyTorch: An open-source machine learning library.
+
+
+
+
+- `chembl_smiles.txt`: Contains 1.8 million molecule SMILES strings from Chembl Database for the base training of the LSTM
+    - `ChemblDatensatzAXLKinase.txt`: Contains known AXL kinase inhibitors from Chembl / NIB Database for the training of the Siamse Network
