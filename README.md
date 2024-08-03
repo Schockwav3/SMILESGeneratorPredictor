@@ -118,7 +118,7 @@ This will give you a complete overview of the **SMILES GeneratorPredictor** proj
 
 This will give you a complete overview of the **SMILES GeneratorPredictor** Workflow:
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflow.png" width="610" height="1360">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflow.png" width="600" height="1360">
 
 
 
