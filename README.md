@@ -109,7 +109,7 @@ The combined approach makes it possible to generate not only a large number of s
 
 This will give you a complete overview of the **SMILES GeneratorPredictor** project structure, all existing scripts in the repository and all required files:
 
-![Project Structure](https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/project_structure.png)
+![Project Structure](https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/project_structure.png)
 
 
 
@@ -118,7 +118,7 @@ This will give you a complete overview of the **SMILES GeneratorPredictor** proj
 
 This will give you a complete overview of the **SMILES GeneratorPredictor** Workflow:
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/workflow.png" width="600" height="1360">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/Pictures/main/workflow.png" width="600" height="1360">
 
 
 
