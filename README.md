@@ -368,6 +368,11 @@ def __init__(self, smiles_list, tokenizer, vocabulary, augment: bool = True, aug
 
 ### File Path
 
+
+```bash
+file_path = '/****/****/chembl_smiles.txt'
+```
+
 - `file_path (str)`: Path to the SMILES file which includes the dataset for prelearning the SMILES Generator model. 
 
 - If Transfer Learning is activated, update the path to the new SMILES file which the pre-trained model should retrain. 
@@ -378,6 +383,13 @@ def __init__(self, smiles_list, tokenizer, vocabulary, augment: bool = True, aug
 ### Save, Load and Transfer Learning
 
 - These settings determine whether an already trained model should be used and where this model should be saved or loaded. This is useful for the application of Transfer Learning, where a model is based on previously learnt weights to reduce training time and improve performance. Or atleast to save the pre-trained model.
+
+
+```bash
+use_pretrained_model = True
+load_model_path = '/****/****/model_new_try0907.pth'
+save_model_path = '/****/****/model_new_try0408.pth'
+```
 
 - `use_pretrained_model (bool)`: If this variable is set to `True`, the model is not trained from scratch, it indicates that a pre-trained model should be used. It loads and uses weights that have already been learnt. Can be used for Transfer Learning or the fine-tuning (phase 2) process.
 
@@ -419,7 +431,7 @@ If the SMILES Predictor isn't ready pause here and continue later after training
 
 - `def calculate_descriptors(smiles)`: Converts a SMILES string into an RDKit molecule object and calculates a variety of chemical descriptors.
 
-- `def evaluate_smiles(smiles, mlp_model, tokenizer, vocabulary)`: Evaluates them with the MLP and returns the prediction. The function returns either 1 (AXL-classified) or 0 (not AXL-classified), depending on the result of the MLP prediction.
+- `def evaluate_smiles(smiles, mlp_model, tokenizer, vocabulary)`: Evaluates them with the MLP and returns the prediction. The function returns either **1 (AXL-classified)** or **0 (not AXL-classified)**, depending on the result of the MLP prediction.
 
 
 
@@ -428,10 +440,10 @@ If the SMILES Predictor isn't ready pause here and continue later after training
 
 - This class implements the fine-tuning of the SMILES Generator model with a reinforcement learning approach based on classification by the SMILES Predictor model.
 
-- 1. Sampling: The model generates a series of sequences (DeepSMILES).
+1. Sampling: The model generates a series of sequences (DeepSMILES).
     - `generated_deepsmiles = self.model.generate_deepsmiles(num_samples=1, max_length=100)[0]` Generates DeepSMILES sequences and converts them to SMILES `generated_smiles = self.model.convert_deepsmiles_to_smiles([generated_deepsmiles])[0]`. Validates the generated SMILES and sorts out invalid ones.
 
-- 2. Rewarding: Each sequence receives a reward based on its quality.
+2. Rewarding: Each sequence receives a reward based on its quality.
 
     - Evaluates the SMILES generated using the MLP model.
 
@@ -461,25 +473,25 @@ else:
     reward = -7.5
 ```
 
-- 3. log-probs calculation: For each sequence, the log probability of its generation is calculated.
+3. log-probs calculation: For each sequence, the log probability of its generation is calculated.
 
     - `logit, _ = self.model(sequence)`: The generated sequence input `(sequence)` is passed through the model `(self.model)`. The model returns `logits`, which represent the raw values of the probabilities over the entire vocabulary for each position in the sequence. These `logits` are passed through the log softmax function `(F.log_softmax)` to calculate the log probabilities `(log_probs)`. For each position in the sequence, the log probability of the actual generated token is extracted. 
     
     - `log_probs.append(log_prob.sum())`: The sum of the log probabilities for the entire sequence is calculated and added to `log_probs`. This sum represents the log probability of the entire generated sequence.
 
-- 4. loss calculation: A policy loss is calculated, which indicates how the model should adjust its probabilities in order to obtain more positive rewards in the future.
+4. loss calculation: A policy loss is calculated, which indicates how the model should adjust its probabilities in order to obtain more positive rewards in the future.
 
     - `policy_loss = -log_probs * rewards`: The product of log_probs and rewards gives the value that indicates how well the model generated this sequence based on the reward received. The negative sign (`-`) is used because we want to minimise the loss, but the goal is to maximise the rewards (higher rewards for better sequences).
 
     - `policy_loss = policy_loss.mean()`: The average policy loss over all generated sequences is calculated. This average value is used as the final loss that the model wants to minimise.
 
-- 5. backpropagation: The calculated loss is used for the backpropagation to calculate the gradients and update the weights of the model.
+5. backpropagation: The calculated loss is used for the backpropagation to calculate the gradients and update the weights of the model.
 
     - `self.optimizer.zero_grad()`: Before calculating the gradients, all previously calculated gradients are set to zero
 
     - `policy_loss.backward()`: Calculates the gradients of the policy loss with respect to all parameters in the model. These gradients indicate the direction and amount of adjustment required for each model parameter to minimise the loss.
 
-- 6. optimisation: The optimiser parameters are updated to improve the model.
+6. optimisation: The optimiser parameters are updated to improve the model.
 
     - `self.optimizer.step()`: After the gradients have been calculated, the optimiser `Adam` adjusts the model parameters based on these gradients.
 
