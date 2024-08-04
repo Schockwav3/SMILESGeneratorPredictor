@@ -1,4 +1,4 @@
-# SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with the SMILES Predictor
+# SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with SMILES Predictor
 
 The first part of this project involves a Generator for generating specified SMILES (Simplified Molecular Input Line Entry System) strings using a combined deep learning model. The model leverages deepSMILES, a more compact representation of SMILES and augment it with the SMILES Predictor MLP to enhance the generation process of the LSTM (Long Short Term Model). By combining the base trained LSTM Model with the classification of the SMILES Predictor as Reinforment Learning approach to improve the output of the LSTM and ensure similarity to a target class of molecules.
 
@@ -63,6 +63,11 @@ The combined approach makes it possible to generate not only a large number of s
    - To activate the created conda environmentconda and getting started execute `conda activate GeneratorPredictor`
 
 
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/Schockwav3/SMILESGeneratorPredictor.git
+    cd smiles-generation
+    ```
 
 
 ## Requirements
@@ -123,80 +128,23 @@ This will give you a complete overview of the **SMILES GeneratorPredictor** Work
 
 
 
+## SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with SMILES Predictor
 
 
+## Breakdown of the Code
 
 
-4. **SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with the SMILES Predictor**
-    1. [Data Preparation](#data-preparation)
-    2. [Model Training](#model-training)
-    3. [Siamese Network Training](#siamese-network-training)
-    4. [Combining Both Models](#combining-both-models)
-    5. [Usage](#usage)
-    6. [Parameters](#parameters)
+## Device Selection
 
-5. **SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for classification**
-    1. [Data Preparation](#data-preparation)
-    2. [Model Training](#model-training)
-    3. [Siamese Network Training](#siamese-network-training)
-    4. [Combining Both Models](#combining-both-models)
-    5. [Usage](#usage)
-    6. [Parameters](#parameters)
+The primary purpose of device selection is to determine whether the computations will be performed on a CPU or a GPU. The choice of device can significantly impact the training and inference speed of deep learning models, especially those involving large datasets and complex architectures.
 
-6. [References](#references)
+- **Checking GPU Availability:** The code starts by checking if a CUDA-capable GPU is available on the machine. This is done using the function `torch.cuda.is_available()`.
+
+- **If a GPU is Available:** If a CUDA-compatible GPU is found, the device is set to cuda using `torch.device("cuda")`. This setting indicates that the model and its computations will be transferred to the GPU, which can provide significant speed-ups due to its parallel processing capabilities.
+
+- **If a GPU is Not Available:** If no compatible GPU is detected, the device is set to cpu using `torch.device("cpu")`. This means that all computations will be performed on the CPU.
 
 
-
-
-
-
-
-## Requirements
-
-- python 3.7+
-- rdkit
-- pyTorch
-- numPy
-- pandas
-- scikit-learn
-- tqdm
-- matplotlib
-- torchmetrics
-- deepsmiles
-
-
-## Project Structure
-
-├── data
-│ ├── chembl_smiles.txt
-│ ├── smiles_example3.txt
-│ └── ChemblDatensatzAXLKinase.txt
-├── src
-│ ├── xx.py
-│ ├── xx.py
-│ ├── xx.py
-│ ├── xx.py
-│ └── Vocabulary_Creator.ipynb
-├── README.md
-└── requirements.txt
-
-
-## Setup and Installation
-
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/Schockwav3/SMILESGeneratorPredictor.git
-    cd smiles-generation
-    ```
-
-2. Install the required packages:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-
-
-## SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with the SMILES Predictor
 
 
 ## Define the Vocabulary
@@ -277,6 +225,8 @@ The FixedVocabulary class defines a fixed set of tokens for encoding SMILES sequ
 If you need to update or change the FixedVocabulary you can use the sript in /src/Vocabulary_Creator.ipynb to analyze a file with SMILES and see which Tokens are used and how many of them are included to create a updated Vocabulary but for most use cases this Vocabulary should be fine.
 
 
+
+
 ## Tokanizer
 
 - The DeepSMILESTokenizer class handles the transformation of SMILES into deepSMILES and performs tokenization and untokenization.
@@ -297,83 +247,100 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
  ```
 
 
+
+
 ## Define the LSTM Model (RNN)
 
+- The LSTM base model is designed to handle the generation and manipulation of SMILES representations using an RNN (Recurrent Neural Network) architecture with LSTM (Long Short-Term Memory) cells.
+
+- The architecture of the LSTM includes an `**embedding layer** which converts the input sequences into dense vectors, **LSTM layers** which processes these vectors sequentially and returns a sequence of outputs and a final **linear layer** at the end transforms the LSTM outputs back to the size of the vocabulary so that the probabilities for the next token can be calculated.
+
+- Training process: 
+        During training, the model receives a SMILES sequence and learns to predict the next token in the sequence. The training loss is calculated by measuring the difference between the predicted and actual tokens.
+
+- Sequence generation:
+        During generation, the model begins with a start token (^) and progressively predicted the next token until an end token ($) is reached or a maximum sequence length is reached.
+        `generate_deepsmiles(num_samples, max_length)`: Generates a specified number of deepSMILES sequences up to a maximum length, used for creating new molecular representations.
+        `convert_deepsmiles_to_smiles(deep_smiles_list)`: Converts a list of deepSMILES sequences back to SMILES format, making the output interpretable in a chemical context.
+
+- The input parameters allow users to configure the model according to the complexity of the dataset and the computational resources available. The model's capability to load pretrained weights also facilitates fine-tuning (phase 2) and Transfer Learning, making it adaptable to new tasks with minimal retraining.
+
+- Key Input Parameters:
+
+   - `voc_size (int)`: The size of the vocabulary, which dictates the number of unique tokens the model can understand.
+
+   - `layer_size (int)`: The number of units in each LSTM layer, determining the model's capacity.
+
+   - `num_layers (int)`: The number of LSTM layers stacked in the model, affecting the depth and representational power.
+
+   - `embedding_layer_size (int)`: The size of the embedding vectors that represent input tokens, influencing the richness of token representations.
+
+   - `dropout (float)`: The dropout rate applied to prevent overfitting by randomly setting some LSTM outputs to zero during training.
+
+   - `layer_normalization (bool)`: A flag indicating whether to apply layer normalization, which helps stabilize and accelerate training.
 
 
-## Data Preparation
 
-1. Prepare your SMILES data files:
-    - `chembl_smiles.txt`: Contains 1.8 million molecule SMILES strings from Chembl Database for the base training of the LSTM
-    - `ChemblDatensatzAXLKinase.txt`: Contains known AXL kinase inhibitors from Chembl / NIB Database for the training of the Siamse Network
-    - `smiles_example3.txt`: Contains other molecule SMILES strings for the training of the Siamese Network
-   
 
-2. Place these files in the `data` directory.
+## Define Trainer
 
-## Model Training
+- The SmilesTrainer class is used to streamline the training process of the LSTM model. It handles data loading, model training, validation, and testing, as well as monitoring the training progress through loss and accuracy metrics. The class can utilize a pretrained model for fine-tuning (phase 2), making it versatile for different stages of model development. The plotting functions provide a clear visualization of the training dynamics, allowing for easy identification of issues such as overfitting or underfitting.
 
-1. Define the vocabulary and tokenizer:
-    ```python
-    vocabulary = FixedVocabulary()
-    tokenizer = DeepSMILESTokenizer(vocabulary)
-    ```
+- NLLLoss:
+        `nn.NLLLoss()` stands for the **"Negative Log Likelihood Loss "**. It is a loss function that is often used in classification problems. It calculates the negative log-likelihood of the correct class. If the probability of the correct class is low, the log value becomes negative and large, resulting in a high loss. The loss is minimised by training the model to maximise the probability of correct classes.
 
-2. Initialize and train the SMILES generation model:
-    ```python
-    model = SmilesLSTM(vocabulary, tokenizer)
-    model.to(device)
+- Calculate predictions:
+        `outputs.argmax(dim=-1)` selects the class with the highest log probability for each position in the sequence. The result is a tensor where each position contains the predicted class.
 
-    smiles_list = load_data('data/smiles_example3.txt')
-    dataset = SMILESDataset(smiles_list, tokenizer, vocabulary, augment=True)
+- Determine correct predictions:
+        `(predictions == targets).float()` compares the predictions with the actual target classes and produces a tensor containing 1 if the prediction is correct and 0 if it is incorrect.
 
-    train_dataset, valid_dataset, test_dataset = split_data(dataset)
+- Calculate accuracy:
+        `correct.mean()` calculates the average of the correct predictions, which corresponds to the accuracy, i.e. the proportion of correctly predicted tokens.
 
-    train_loader = DataLoader(train_dataset, batch_size=250, shuffle=True, collate_fn=SmilesLSTM.collate_fn)
-    valid_loader = DataLoader(valid_dataset, batch_size=250, shuffle=False, collate_fn=SmilesLSTM.collate_fn)
-    test_loader = DataLoader(test_dataset, batch_size=250, shuffle=False, collate_fn=SmilesLSTM.collate_fn)
+- These methods are crucial for monitoring and optimising the training process as they provide insights into the performance of the model. Loss helps to determine the direction for updating the model parameters, while accuracy is a direct metric for the model's performance in terms of correct predictions.
 
-    trainer = SmilesTrainer(model, train_loader, valid_loader, test_loader, use_pretrained_model=False)
-    trainer.train()
-    ```
+- The division into the three data sets is crucial to ensure a fair and reliable evaluation of model performance. Without this, the model could be over-optimised on the training data and subsequently perform poorly on new data. 
+        `train` is used to train the model. The model learns patterns, relationships and structures in the data and adjusts its parameters to improve predictions.
+        `validation` is used to evaluate the model during training. They help to assess the performance of the model independently of the training data.
+        `test` is only used to evaluate the final model performance after the training has been completed.
 
-## Siamese Network Training
+- By plotting the loss and accuracy metrics over the training epochs, you can gain deeper insights into the behaviour of the model during the training process, evaluating model performance and react accordingly. 
 
-1. Prepare the AXL and non-AXL SMILES lists:
-    ```python
-    axl_smiles_list = load_data('data/ChemblDatensatzAXLKinase.txt')
-    non_axl_smiles_list = load_data('data/smiles_example3.txt')
-    ```
+- Key Input Parameters:
 
-2. Initialize and train the Siamese network:
-    ```python
-    siamese_dataset = SiameseDataset(axl_smiles_list, non_axl_smiles_list, tokenizer, vocabulary, num_pairs=10)
-    siamese_loader = DataLoader(siamese_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
+    - `epochs (int)`: The number of epochs (full passes through the training dataset) to train the model.
 
-    siamese_base_model = SmilesLSTM(vocabulary, tokenizer)
-    siamese_model = SiameseNetwork(siamese_base_model)
+    - `learning_rate (float)`: The learning rate for the optimizer, controlling how much to adjust the model's weights with respect to the loss gradient.
 
-    train_siamese_network(siamese_model, siamese_loader, epochs=10)
-    ```
+    - `batch_size (int)`: The number of samples per batch to be loaded by the DataLoader.
 
-## Combining Both Models
+    - `use_pretrained_model (bool)`: Indicates whether to use a pretrained model for the fine-tuning (phase 2) process.
 
-1. Initialize the combined trainer and train both models together:
-    ```python
-    trainer_with_siamese = SmilesTrainerWithSiamese(model, siamese_model, train_loader, valid_loader, test_loader, 
-                                                    axl_smiles_list=axl_smiles_list, tokenizer=tokenizer, 
-                                                    vocabulary=vocabulary, use_pretrained_model=False)
-    trainer_with_siamese.train()
-    ```
+    - `load_model_path (str)`: The file path to load a pretrained model's weights.
 
-## Usage
+    - `save_model_path (str)`: The file path to save the trained model's weights.
 
-- Train the models:
-    ```bash
-    python src/main.py
-    ```
 
-- Change the `file_path` in `main.py` to use your custom data files.
+
+
+## Dataset
+
+- The SMILESDataset class is designed to preprocess SMILES data for the machine learning task. It efficiently handles data augmentation, tokenization, and encoding to prepare input-target pairs for model training. 
+
+- Data augmentation enhances the diversity of the dataset, potentially improving model robustness. For each SMILES in the list, if `augment=True`, it generates multiple random valid SMILES representations of the same molecule using `randomize_smiles(self, smile: str, num_random: int)` method. The model can learn to recognize the molecule regardless of the specific SMILES string used.
+
+- `load_data`: reads a file containing SMILES strings (one per line) and returns a list of these strings.
+
+- `split_data`: splits a given dataset into three subsets: **training=0.7**, **validation=0.15**, and **test=0.15** sets.
+
+- Key Input Parameters:
+
+    - `augment (bool)`: A flag indicating whether to apply data augmentation to the SMILES strings.
+
+    - `augment_factor (int)`: The number of augmented versions to generate for each SMILES string.
+
+
 
 ## Parameters
 
@@ -389,21 +356,8 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 - `load_model_path`: Path to the pretrained model (default: None).
 - `save_model_path`: Path to save the trained model (default: None).
 
-### SmilesTrainerWithSiamese
-- `model`: The SMILES generation model.
-- `siamese_model`: The Siamese network model.
-- `train_dataloader`: DataLoader for training data.
-- `valid_dataloader`: DataLoader for validation data.
-- `test_dataloader`: DataLoader for testing data.
-- `axl_smiles_list`: List of AXL kinase inhibitor SMILES.
-- `tokenizer`: The DeepSMILES tokenizer.
-- `vocabulary`: The vocabulary object.
-- `epochs`: Number of training epochs (default: 10).
-- `learning_rate`: Learning rate for the optimizer (default: 0.0010).
-- `batch_size`: Batch size for training (default: 250).
-- `use_pretrained_model`: Whether to use a pretrained model (default: None).
-- `load_model_path`: Path to the pretrained model (default: None).
-- `save_model_path`: Path to save the trained model (default: None).
+
+
 
 
 
