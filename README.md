@@ -63,7 +63,7 @@ The combined approach makes it possible to generate not only a large number of s
    - To activate the created conda environmentconda and getting started execute `conda activate GeneratorPredictor`
 
 
-1. Clone the repository:
+**Clone the repository:**
     ```bash
     git clone https://github.com/Schockwav3/SMILESGeneratorPredictor.git
     cd smiles-generation
@@ -131,10 +131,10 @@ This will give you a complete overview of the **SMILES GeneratorPredictor** Work
 ## SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with SMILES Predictor
 
 
-## Breakdown of the Code
+**Breakdown of the Code**
 
 
-## Device Selection
+### Device Selection
 
 The primary purpose of device selection is to determine whether the computations will be performed on a CPU or a GPU. The choice of device can significantly impact the training and inference speed of deep learning models, especially those involving large datasets and complex architectures.
 
@@ -147,7 +147,7 @@ The primary purpose of device selection is to determine whether the computations
 
 
 
-## Define the Vocabulary
+### Define the Vocabulary
 
 The FixedVocabulary class defines a fixed set of tokens for encoding SMILES sequences.
 
@@ -227,7 +227,7 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 
 
-## Tokanizer
+### Tokanizer
 
 - The DeepSMILESTokenizer class handles the transformation of SMILES into deepSMILES and performs tokenization and untokenization.
 
@@ -249,19 +249,19 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 
 
-## Define the LSTM Model (RNN)
+### Define the LSTM Model (RNN)
 
 - The LSTM base model is designed to handle the generation and manipulation of SMILES representations using an RNN (Recurrent Neural Network) architecture with LSTM (Long Short-Term Memory) cells.
 
 - The architecture of the LSTM includes an `**embedding layer** which converts the input sequences into dense vectors, **LSTM layers** which processes these vectors sequentially and returns a sequence of outputs and a final **linear layer** at the end transforms the LSTM outputs back to the size of the vocabulary so that the probabilities for the next token can be calculated.
 
 - Training process: 
-        During training, the model receives a SMILES sequence and learns to predict the next token in the sequence. The training loss is calculated by measuring the difference between the predicted and actual tokens.
+    - During training, the model receives a SMILES sequence and learns to predict the next token in the sequence. The training loss is calculated by measuring the difference between the predicted and actual tokens.
 
 - Sequence generation:
-        During generation, the model begins with a start token (^) and progressively predicted the next token until an end token ($) is reached or a maximum sequence length is reached.
-        `generate_deepsmiles(num_samples, max_length)`: Generates a specified number of deepSMILES sequences up to a maximum length, used for creating new molecular representations.
-        `convert_deepsmiles_to_smiles(deep_smiles_list)`: Converts a list of deepSMILES sequences back to SMILES format, making the output interpretable in a chemical context.
+    - During generation, the model begins with a start token (^) and progressively predicted the next token until an end token ($) is reached or a maximum sequence length is reached.
+    - `generate_deepsmiles(num_samples, max_length)`: Generates a specified number of deepSMILES sequences up to a maximum length, used for creating new molecular representations.
+    - `convert_deepsmiles_to_smiles(deep_smiles_list)`: Converts a list of deepSMILES sequences back to SMILES format, making the output interpretable in a chemical context.
 
 - The input parameters allow users to configure the model according to the complexity of the dataset and the computational resources available. The model's capability to load pretrained weights also facilitates fine-tuning (phase 2) and Transfer Learning, making it adaptable to new tasks with minimal retraining.
 
@@ -282,28 +282,28 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 
 
-## Define Trainer
+### Define Trainer
 
 - The SmilesTrainer class is used to streamline the training process of the LSTM model. It handles data loading, model training, validation, and testing, as well as monitoring the training progress through loss and accuracy metrics. The class can utilize a pretrained model for fine-tuning (phase 2), making it versatile for different stages of model development. The plotting functions provide a clear visualization of the training dynamics, allowing for easy identification of issues such as overfitting or underfitting.
 
 - NLLLoss:
-        `nn.NLLLoss()` stands for the **"Negative Log Likelihood Loss "**. It is a loss function that is often used in classification problems. It calculates the negative log-likelihood of the correct class. If the probability of the correct class is low, the log value becomes negative and large, resulting in a high loss. The loss is minimised by training the model to maximise the probability of correct classes.
+    - `nn.NLLLoss()` stands for the **"Negative Log Likelihood Loss "**. It is a loss function that is often used in classification problems. It calculates the negative log-likelihood of the correct class. If the probability of the correct class is low, the log value becomes negative and large, resulting in a high loss. The loss is minimised by training the model to maximise the probability of correct classes.
 
 - Calculate predictions:
-        `outputs.argmax(dim=-1)` selects the class with the highest log probability for each position in the sequence. The result is a tensor where each position contains the predicted class.
+    - `outputs.argmax(dim=-1)` selects the class with the highest log probability for each position in the sequence. The result is a tensor where each position contains the predicted class.
 
 - Determine correct predictions:
-        `(predictions == targets).float()` compares the predictions with the actual target classes and produces a tensor containing 1 if the prediction is correct and 0 if it is incorrect.
+    - `(predictions == targets).float()` compares the predictions with the actual target classes and produces a tensor containing 1 if the prediction is correct and 0 if it is incorrect.
 
 - Calculate accuracy:
-        `correct.mean()` calculates the average of the correct predictions, which corresponds to the accuracy, i.e. the proportion of correctly predicted tokens.
+    - `correct.mean()` calculates the average of the correct predictions, which corresponds to the accuracy, i.e. the proportion of correctly predicted tokens.
 
 - These methods are crucial for monitoring and optimising the training process as they provide insights into the performance of the model. Loss helps to determine the direction for updating the model parameters, while accuracy is a direct metric for the model's performance in terms of correct predictions.
 
 - The division into the three data sets is crucial to ensure a fair and reliable evaluation of model performance. Without this, the model could be over-optimised on the training data and subsequently perform poorly on new data. 
-        `train` is used to train the model. The model learns patterns, relationships and structures in the data and adjusts its parameters to improve predictions.
-        `validation` is used to evaluate the model during training. They help to assess the performance of the model independently of the training data.
-        `test` is only used to evaluate the final model performance after the training has been completed.
+    - `train` is used to train the model. The model learns patterns, relationships and structures in the data and adjusts its parameters to improve predictions.
+    - `validation` is used to evaluate the model during training. They help to assess the performance of the model independently of the training data.
+    - `test` is only used to evaluate the final model performance after the training has been completed.
 
 - By plotting the loss and accuracy metrics over the training epochs, you can gain deeper insights into the behaviour of the model during the training process, evaluating model performance and react accordingly. 
 
@@ -324,7 +324,7 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 
 
-## Dataset
+### Dataset
 
 - The SMILESDataset class is designed to preprocess SMILES data for the machine learning task. It efficiently handles data augmentation, tokenization, and encoding to prepare input-target pairs for model training. 
 
@@ -339,24 +339,6 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
     - `augment (bool)`: A flag indicating whether to apply data augmentation to the SMILES strings.
 
     - `augment_factor (int)`: The number of augmented versions to generate for each SMILES string.
-
-
-
-## Parameters
-
-### SmilesTrainer
-- `model`: The SMILES generation model.
-- `train_dataloader`: DataLoader for training data.
-- `valid_dataloader`: DataLoader for validation data.
-- `test_dataloader`: DataLoader for testing data.
-- `epochs`: Number of training epochs (default: 5).
-- `learning_rate`: Learning rate for the optimizer (default: 0.0010).
-- `batch_size`: Batch size for training (default: 250).
-- `use_pretrained_model`: Whether to use a pretrained model (default: None).
-- `load_model_path`: Path to the pretrained model (default: None).
-- `save_model_path`: Path to save the trained model (default: None).
-
-
 
 
 
