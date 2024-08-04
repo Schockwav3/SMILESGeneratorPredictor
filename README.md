@@ -32,7 +32,7 @@ The combined approach makes it possible to generate not only a large number of s
 
 ## Setup and Installation
 
-**Conda**
+### Conda
 
    - Please check out the [Conda Documentation](https://github.com/conda/conda-docs).
 
@@ -63,27 +63,32 @@ The combined approach makes it possible to generate not only a large number of s
    - To activate the created conda environmentconda and getting started execute `conda activate GeneratorPredictor`
 
 
-**Clone the repository:**
+### Repository
+
+- Clone the repository:
+
     ```bash
     git clone https://github.com/Schockwav3/SMILESGeneratorPredictor.git
-    cd smiles-generation
+    cd SMILESGeneratorPredictor
     ```
 
 
 ## Requirements
 
-- Set up all required data
+Set up all required data
 
 - **Phase 1 SMILES Generator**
 
-   - You need the input **chembl_smiles.txt** containing the 1.8 million small molecule compounds from the ChEMBL database. This is the dataset what I used to lead the SMILES Predictor to train the vocabular and the basic structure of molecules. It is already in the repository. If you want to use a different dataset for training feel free to change it in your project and update the `file_path`. 
+   - You need the input **chembl_smiles.txt** containing the 1.8 million small molecule compounds from the ChEMBL database. This is the dataset what I used to lead the SMILES Generator to train the vocabular and the basic structure of molecules. It is already in the repository. If you want to use a different dataset for training feel free to change it in your project and update the `file_path`. 
    
-> Note: The defined vocabulary is adjusted to the components of the molecules that occur most frequently in this data set. I have written and added a script `Vocabulary_Creator` that analyses other datasets and outputs which vocabulars are most common. With this information you can extend the vocabulary if necessary. 
+> [!TIP]
+ The defined vocabulary is adjusted to the components of the molecules that occur most frequently in this data set. I have written and added a script `Vocabulary_Creator` that analyses other datasets and outputs which vocabulars are most common. With this information you can extend the vocabulary if necessary. 
 
-   - Once the network has been pretrained on the basic dataset, it will be saved under the `save_model_path` and can then be further trained for Transfer Learning or phase 2.
+   - Once the network has been pretrained on the basic dataset, it will be saved under the `save_model_path` and can then be further trained for Transfer Learning or fine-tuning (Phase 2).
 
 
-> Note: It is also possible to use **Transfer Learning** to a second more specific dataset of SMILES. To do this, simply save the model after the first training and activate `use_pretrained_model = True`, adjust the parameters, define the second / new dataset as new `file_path` and run the code again.
+> [!TIP]
+ It is also possible to use **Transfer Learning** to a second more specific dataset of SMILES. To do this, simply save the model after the first training and activate `use_pretrained_model = True`, adjust the parameters, define the second / new dataset as new `file_path` and run the code again.
 
 
 - **Phase 2 SMILES Generator**
@@ -102,7 +107,8 @@ The combined approach makes it possible to generate not only a large number of s
     Target = 1: AXL kinase inhibitor
     Target = 0: Other molecules
 
-> Note: You should search for as much target SMILES for your prediction class input as possible. In my example I found a total of 4564 on ChEMBL and NIH. For the generic smiles data I took a ratio of around 1:2 so a total of 10812 random non target SMILES. 
+> [!TIP] 
+You should search for as much target SMILES for your prediction class input as possible. In my example I found a total of 4564 on ChEMBL and NIH. For the generic smiles data I took a ratio of around 1:2 so a total of 10812 random non target SMILES. 
 
 
    - Once the network has been trained, it will be saved under `save_model_path`. The trained SMILES Predictor model can then be used to classify SMILES.
@@ -129,9 +135,6 @@ This will give you a complete overview of the **SMILES GeneratorPredictor** Work
 
 
 ## SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with SMILES Predictor
-
-
-**Breakdown of the Code**
 
 
 ### Device Selection
@@ -231,6 +234,9 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 - The DeepSMILESTokenizer class handles the transformation of SMILES into deepSMILES and performs tokenization and untokenization.
 
+> [!TIP]
+DEEPSMILES 
+
 - The DeepSMILESTokenizer class uses several regular expressions to tokenize deepSMILES strings. Each regex pattern is designed to  match specific components of a SMILES string. Below are the regex patterns used and their purposes:
 
     - `brackets` groups characters within square brackets together, which can represent charged atoms or specific configurations in the SMILES syntax.
@@ -253,7 +259,10 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 - The LSTM base model is designed to handle the generation and manipulation of SMILES representations using an RNN (Recurrent Neural Network) architecture with LSTM (Long Short-Term Memory) cells.
 
-- The architecture of the LSTM includes an `**embedding layer** which converts the input sequences into dense vectors, **LSTM layers** which processes these vectors sequentially and returns a sequence of outputs and a final **linear layer** at the end transforms the LSTM outputs back to the size of the vocabulary so that the probabilities for the next token can be calculated.
+- The architecture of the LSTM includes:
+    - **embedding layer** which converts the input sequences into dense vectors.
+    - **LSTM layers** which processes these vectors sequentially and returns a sequence of outputs.
+    - **linear layer** at the end transforms the LSTM outputs back to the size of the vocabulary so that the probabilities for the next token can be calculated.
 
 - Training process: 
     - During training, the model receives a SMILES sequence and learns to predict the next token in the sequence. The training loss is calculated by measuring the difference between the predicted and actual tokens.
@@ -265,9 +274,18 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 - The input parameters allow users to configure the model according to the complexity of the dataset and the computational resources available. The model's capability to load pretrained weights also facilitates fine-tuning (phase 2) and Transfer Learning, making it adaptable to new tasks with minimal retraining.
 
-- Key Input Parameters:
 
-   - `voc_size (int)`: The size of the vocabulary, which dictates the number of unique tokens the model can understand.
+ ```bash
+       default_params = {
+        "layer_size": 512,
+        "num_layers": 3,
+        "embedding_layer_size": 128,
+        "dropout": 0.0,
+        "layer_normalization": False
+        }
+ ```
+
+- Key Input Parameters:
 
    - `layer_size (int)`: The number of units in each LSTM layer, determining the model's capacity.
 
@@ -282,7 +300,7 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 
 
-### Define Trainer
+### Define the Trainer
 
 - The SmilesTrainer class is used to streamline the training process of the LSTM model. It handles data loading, model training, validation, and testing, as well as monitoring the training progress through loss and accuracy metrics. The class can utilize a pretrained model for fine-tuning (phase 2), making it versatile for different stages of model development. The plotting functions provide a clear visualization of the training dynamics, allowing for easy identification of issues such as overfitting or underfitting.
 
@@ -300,12 +318,18 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 - These methods are crucial for monitoring and optimising the training process as they provide insights into the performance of the model. Loss helps to determine the direction for updating the model parameters, while accuracy is a direct metric for the model's performance in terms of correct predictions.
 
-- The division into the three data sets is crucial to ensure a fair and reliable evaluation of model performance. Without this, the model could be over-optimised on the training data and subsequently perform poorly on new data. 
+- The division into the three data sets is important to ensure a fair and reliable evaluation of model performance. Without this, the model could be over-optimised on the training data and subsequently perform poorly on new data. 
     - `train` is used to train the model. The model learns patterns, relationships and structures in the data and adjusts its parameters to improve predictions.
     - `validation` is used to evaluate the model during training. They help to assess the performance of the model independently of the training data.
     - `test` is only used to evaluate the final model performance after the training has been completed.
 
 - By plotting the loss and accuracy metrics over the training epochs, you can gain deeper insights into the behaviour of the model during the training process, evaluating model performance and react accordingly. 
+
+
+```bash
+def __init__(self, model, train_dataloader, valid_dataloader, test_dataloader, 
+                 epochs=20, learning_rate=0.0010, batch_size=250, use_pretrained_model=None, load_model_path=None, save_model_path=None):
+```
 
 - Key Input Parameters:
 
@@ -315,16 +339,10 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
     - `batch_size (int)`: The number of samples per batch to be loaded by the DataLoader.
 
-    - `use_pretrained_model (bool)`: Indicates whether to use a pretrained model for the fine-tuning (phase 2) process.
-
-    - `load_model_path (str)`: The file path to load a pretrained model's weights.
-
-    - `save_model_path (str)`: The file path to save the trained model's weights.
 
 
 
-
-### Dataset
+### Define the Dataset
 
 - The SMILESDataset class is designed to preprocess SMILES data for the machine learning task. It efficiently handles data augmentation, tokenization, and encoding to prepare input-target pairs for model training. 
 
@@ -334,11 +352,171 @@ If you need to update or change the FixedVocabulary you can use the sript in /sr
 
 - `split_data`: splits a given dataset into three subsets: **training=0.7**, **validation=0.15**, and **test=0.15** sets.
 
+
+```bash
+def __init__(self, smiles_list, tokenizer, vocabulary, augment: bool = True, augment_factor: int = 4):
+```
+
 - Key Input Parameters:
 
     - `augment (bool)`: A flag indicating whether to apply data augmentation to the SMILES strings.
 
     - `augment_factor (int)`: The number of augmented versions to generate for each SMILES string.
+
+
+
+
+### File Path
+
+- `file_path (str)`: Path to the SMILES file which includes the dataset for prelearning the SMILES Generator model. 
+
+- If Transfer Learning is activated, update the path to the new SMILES file which the pre-trained model should retrain. 
+
+
+
+
+### Save, Load and Transfer Learning
+
+- These settings determine whether an already trained model should be used and where this model should be saved or loaded. This is useful for the application of Transfer Learning, where a model is based on previously learnt weights to reduce training time and improve performance. Or atleast to save the pre-trained model.
+
+- `use_pretrained_model (bool)`: If this variable is set to `True`, the model is not trained from scratch, it indicates that a pre-trained model should be used. It loads and uses weights that have already been learnt. Can be used for Transfer Learning or the fine-tuning (phase 2) process.
+
+- `load_model_path (str)`: Specifies the file path where the pre-trained saved model is located.
+
+- `save_model_path (str)`: This path specifies where the model is to be saved after pre-training or Transfer Learning. It should always be filled with a valid path otherwise the model won`t be saved.
+
+
+
+
+### Activate_fine_tuning (Phase 2)
+
+- Control variable for activating fine-tuning (Part 2)
+
+- `activate_fine_tuning = False` if you want to pretrain the SMILES Generator model (Part 1) or Transfer Learning and skip the second part of the code
+- `activate_fine_tuning = True` if you want to enter fine-tuning (Part 2)
+
+
+## Phase 2
+
+
+### Define pre-trained Models
+
+- Provide the paths to the saved pre-trained LSTM model which will be now be used for further training (fine-tuning) and the already trained SMILES predictor that will be used for the evaluation of the reinforcement learning rewards.
+
+- `trained_lstm_path`: File path to the pre-trained LSTM model
+
+- `trained_mlp_path`: Path to the trained MLP model. The MLP model is used here as a predictor to evaluate the quality of the sequences generated by the LSTM model
+
+> [!TIP]
+If the SMILES Predictor isn't ready pause here and continue later after training the MLP watch workflow or follow the next section **SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation**
+
+
+
+
+### MLP Definition & Descriptors
+
+- `class MLP(nn.Module)`: Loads and defines the multilayer perceptron (MLP) from the SMILES predictor. The output is a two-class classification.
+
+- `def calculate_descriptors(smiles)`: Converts a SMILES string into an RDKit molecule object and calculates a variety of chemical descriptors.
+
+- `def evaluate_smiles(smiles, mlp_model, tokenizer, vocabulary)`: Evaluates them with the MLP and returns the prediction. The function returns either 1 (AXL-classified) or 0 (not AXL-classified), depending on the result of the MLP prediction.
+
+
+
+
+### Define The Trainer Phase2
+
+- This class implements the fine-tuning of the SMILES Generator model with a reinforcement learning approach based on classification by the SMILES Predictor model.
+
+- 1. Sampling: The model generates a series of sequences (DeepSMILES).
+    - `generated_deepsmiles = self.model.generate_deepsmiles(num_samples=1, max_length=100)[0]` Generates DeepSMILES sequences and converts them to SMILES `generated_smiles = self.model.convert_deepsmiles_to_smiles([generated_deepsmiles])[0]`. Validates the generated SMILES and sorts out invalid ones.
+
+- 2. Rewarding: Each sequence receives a reward based on its quality.
+
+    - Evaluates the SMILES generated using the MLP model.
+
+    - Apply higher rewards `reward = 2.5` for AXL-classified SMILES `score == 1`.
+
+    - Give a small reward `reward = 0.5` for valid but not AXL-classified SMILES `score == 0`.
+
+    - Uses penalties `reward = -7.5` for invalid SMILES.
+
+
+```bash
+if score == 1:
+    axl_classified_count += 1
+    axl_classified_smiles_list.append(generated_smiles)
+    reward = 2.5
+
+else:
+    non_axl_classified_count += 1
+    non_axl_classified_smiles_list.append(generated_smiles)
+    reward = 0.5 
+```
+
+```bash
+else:
+    invalid_smiles_count += 1
+    invalid_smiles_list.append(generated_smiles)
+    reward = -7.5
+```
+
+- 3. log-probs calculation: For each sequence, the log probability of its generation is calculated.
+
+    - `logit, _ = self.model(sequence)`: The generated sequence input `(sequence)` is passed through the model `(self.model)`. The model returns `logits`, which represent the raw values of the probabilities over the entire vocabulary for each position in the sequence. These `logits` are passed through the log softmax function `(F.log_softmax)` to calculate the log probabilities `(log_probs)`. For each position in the sequence, the log probability of the actual generated token is extracted. 
+    
+    - `log_probs.append(log_prob.sum())`: The sum of the log probabilities for the entire sequence is calculated and added to `log_probs`. This sum represents the log probability of the entire generated sequence.
+
+- 4. loss calculation: A policy loss is calculated, which indicates how the model should adjust its probabilities in order to obtain more positive rewards in the future.
+
+    - `policy_loss = -log_probs * rewards`: The product of log_probs and rewards gives the value that indicates how well the model generated this sequence based on the reward received. The negative sign (`-`) is used because we want to minimise the loss, but the goal is to maximise the rewards (higher rewards for better sequences).
+
+    - `policy_loss = policy_loss.mean()`: The average policy loss over all generated sequences is calculated. This average value is used as the final loss that the model wants to minimise.
+
+- 5. backpropagation: The calculated loss is used for the backpropagation to calculate the gradients and update the weights of the model.
+
+    - `self.optimizer.zero_grad()`: Before calculating the gradients, all previously calculated gradients are set to zero
+
+    - `policy_loss.backward()`: Calculates the gradients of the policy loss with respect to all parameters in the model. These gradients indicate the direction and amount of adjustment required for each model parameter to minimise the loss.
+
+- 6. optimisation: The optimiser parameters are updated to improve the model.
+
+    - `self.optimizer.step()`: After the gradients have been calculated, the optimiser `Adam` adjusts the model parameters based on these gradients.
+
+
+```bash
+trainer_phase2 = SmilesTrainerPhase2(
+        epochs=120,
+        learning_rate=0.00002,
+        batch_size=32,
+        save_model_path='/****/****/finetuned_model2507.pth',
+        num_generated_smiles=400,
+        reward_scale=1
+    )
+```
+
+- Key Input Parameters:
+
+    - `num_generated_smiles`: Number of SMILES generated per epoch.
+
+    - `epochs`: Number of training runs.
+
+    - `learning_rate`: Learning rate for the optimiser.
+
+    - `batch_size`: Batch size for the training.
+
+    - `save_model_path`: Path to save the fine-tuned model.
+
+    - `reward_scale`: Scalar for adjusting the rewards during fine-tuning.
+
+
+- `calculate_accuracy`: Calculates the accuracy as the ratio of AXL-classified SMILES to the total number of valid SMILES generated.
+
+- `calculate_total_accuracy`: Calculates the total accuracy as the ratio of AXL-classified SMILES to all generated SMILES.
+
+- Logs the number of generated, valid and AXL-classified SMILES as well as the total rewards.
+
+- By plotting the generated and classified count and accuracy metrics over the training epochs, you can gain deeper insights into the behaviour of the model during the training process, evaluating model performance and react accordingly. 
 
 
 
