@@ -152,7 +152,7 @@ The primary purpose of device selection is to determine whether the computations
 
 ### Define the Vocabulary
 
-The FixedVocabulary class defines a fixed set of tokens for encoding SMILES sequences.
+The `class FixedVocabulary` defines a fixed set of tokens for encoding SMILES sequences.
 
 ```bash  
            'PAD':      0,       # Padding token (for filling batches of unequal length)
@@ -225,19 +225,19 @@ The FixedVocabulary class defines a fixed set of tokens for encoding SMILES sequ
 ```
 
 > [!TIP]
-If you need to update or change the FixedVocabulary you can use the sript in /src/Vocabulary_Creator.ipynb to analyze a file with SMILES and see which Tokens are used and how many of them are included to create a updated Vocabulary but for most use cases this Vocabulary should be fine.
+If you need to update or change the `class FixedVocabulary` you can use the sript in /src/Vocabulary_Creator.ipynb to analyze a file with SMILES and see which Tokens are used and how many of them are included to create a updated Vocabulary but for most use cases this Vocabulary should be fine.
 
 
 
 
 ### Tokanizer
 
-- The DeepSMILESTokenizer class handles the transformation of SMILES into deepSMILES and performs tokenization and untokenization.
+- The `class DeepSMILESTokenizer` handles the transformation of SMILES into deepSMILES and performs tokenization and untokenization.
 
 > [!TIP]
-DEEPSMILES 
+**DeepSMILES** is an extension of the standard SMILES format (Simplified Molecular Input Line Entry System) for the visualisation of molecular structures. While SMILES describes the structure of a molecule using a character string, DeepSMILES goes one step further by simplifying and compressing this representation. They make it possible to increase the learning curve in machine learning by reducing the complexity and length of the representations without losing information about the chemical structure.
 
-- The DeepSMILESTokenizer class uses several regular expressions to tokenize deepSMILES strings. Each regex pattern is designed to  match specific components of a SMILES string. Below are the regex patterns used and their purposes:
+- The Tokanizer uses several regular expressions to tokenize deepSMILES strings. Each regex pattern is designed to  match specific components of a SMILES string. Below are the regex patterns used and their purposes:
 
     - `brackets` groups characters within square brackets together, which can represent charged atoms or specific configurations in the SMILES syntax.
 
@@ -257,19 +257,26 @@ DEEPSMILES
 
 ### Define the LSTM Model (RNN)
 
-- The LSTM base model is designed to handle the generation and manipulation of SMILES representations using an RNN (Recurrent Neural Network) architecture with LSTM (Long Short-Term Memory) cells.
+- The LSTM base model is designed to handle the generation and manipulation of SMILES representations using an **RNN (Recurrent Neural Network)** architecture with **LSTM (Long Short-Term Memory)** cells.
 
-- The architecture of the LSTM includes:
+- **LSTM model structure**:
+
     - **embedding layer** which converts the input sequences into dense vectors.
+
     - **LSTM layers** which processes these vectors sequentially and returns a sequence of outputs.
+
     - **linear layer** at the end transforms the LSTM outputs back to the size of the vocabulary so that the probabilities for the next token can be calculated.
 
-- Training process: 
+- **Training process:** 
+
     - During training, the model receives a SMILES sequence and learns to predict the next token in the sequence. The training loss is calculated by measuring the difference between the predicted and actual tokens.
 
-- Sequence generation:
+- **Sequence generation:**
+
     - During generation, the model begins with a start token (^) and progressively predicted the next token until an end token ($) is reached or a maximum sequence length is reached.
+
     - `generate_deepsmiles(num_samples, max_length)`: Generates a specified number of deepSMILES sequences up to a maximum length, used for creating new molecular representations.
+
     - `convert_deepsmiles_to_smiles(deep_smiles_list)`: Converts a list of deepSMILES sequences back to SMILES format, making the output interpretable in a chemical context.
 
 - The input parameters allow users to configure the model according to the complexity of the dataset and the computational resources available. The model's capability to load pretrained weights also facilitates fine-tuning (phase 2) and Transfer Learning, making it adaptable to new tasks with minimal retraining.
@@ -304,26 +311,63 @@ DEEPSMILES
 
 - The SmilesTrainer class is used to streamline the training process of the LSTM model. It handles data loading, model training, validation, and testing, as well as monitoring the training progress through loss and accuracy metrics. The class can utilize a pretrained model for fine-tuning (phase 2), making it versatile for different stages of model development. The plotting functions provide a clear visualization of the training dynamics, allowing for easy identification of issues such as overfitting or underfitting.
 
-- NLLLoss:
+- **NLLLoss:**
     - `nn.NLLLoss()` stands for the **"Negative Log Likelihood Loss "**. It is a loss function that is often used in classification problems. It calculates the negative log-likelihood of the correct class. If the probability of the correct class is low, the log value becomes negative and large, resulting in a high loss. The loss is minimised by training the model to maximise the probability of correct classes.
 
-- Calculate predictions:
+- **Calculate predictions:**
     - `outputs.argmax(dim=-1)` selects the class with the highest log probability for each position in the sequence. The result is a tensor where each position contains the predicted class.
 
-- Determine correct predictions:
+- **Determine correct predictions:**
     - `(predictions == targets).float()` compares the predictions with the actual target classes and produces a tensor containing 1 if the prediction is correct and 0 if it is incorrect.
 
-- Calculate accuracy:
+- **Calculate accuracy:**
     - `correct.mean()` calculates the average of the correct predictions, which corresponds to the accuracy, i.e. the proportion of correctly predicted tokens.
 
 - These methods are crucial for monitoring and optimising the training process as they provide insights into the performance of the model. Loss helps to determine the direction for updating the model parameters, while accuracy is a direct metric for the model's performance in terms of correct predictions.
 
-- The division into the three data sets is important to ensure a fair and reliable evaluation of model performance. Without this, the model could be over-optimised on the training data and subsequently perform poorly on new data. 
+- The division into the three data sets is important to ensure a fair and reliable evaluation of model performance. Without this, the model could be over-optimised on the training data and subsequently perform poorly on new data.
+
     - `train` is used to train the model. The model learns patterns, relationships and structures in the data and adjusts its parameters to improve predictions.
+
     - `validation` is used to evaluate the model during training. They help to assess the performance of the model independently of the training data.
+
     - `test` is only used to evaluate the final model performance after the training has been completed.
 
 - By plotting the loss and accuracy metrics over the training epochs, you can gain deeper insights into the behaviour of the model during the training process, evaluating model performance and react accordingly. 
+
+
+```bash
+def plot_losses(self):
+    plt.figure(figsize=(10, 5))
+    plt.plot(self.train_losses, label='Training loss')
+    plt.plot(self.valid_losses, label='Validation loss')
+    plt.plot(self.test_losses, label='Test loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training Loss Progress')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+```
+
+```bash
+def plot_accuracy(self):
+    plt.figure(figsize=(10, 5))
+    plt.plot(self.train_accuracy, label='Training accuracy')
+    plt.plot(self.valid_accuracy, label='Validation accuracy')
+    plt.plot(self.test_accuracy, label='Test accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.title('Training Accuracy Progress')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+```
+
+- `plot_losses`: Visualises the progress in loss during training.
+
+- `plot_label_accuracy`: Visualises the accuracy for different labels over the training time.
+
 
 
 ```bash
@@ -346,7 +390,7 @@ def __init__(self, model, train_dataloader, valid_dataloader, test_dataloader,
 
 - The SMILESDataset class is designed to preprocess SMILES data for the machine learning task. It efficiently handles data augmentation, tokenization, and encoding to prepare input-target pairs for model training. 
 
-- Data augmentation enhances the diversity of the dataset, potentially improving model robustness. For each SMILES in the list, if `augment=True`, it generates multiple random valid SMILES representations of the same molecule using `randomize_smiles(self, smile: str, num_random: int)` method. The model can learn to recognize the molecule regardless of the specific SMILES string used.
+- **Data Augmentation** enhances the diversity of the dataset, potentially improving model robustness. For each SMILES in the list, if `augment=True`, it generates multiple random valid SMILES representations of the same molecule using `randomize_smiles(self, smile: str, num_random: int)` method. The model can learn to recognize the molecule regardless of the specific SMILES string used.
 
 - `load_data`: reads a file containing SMILES strings (one per line) and returns a list of these strings.
 
@@ -415,9 +459,9 @@ save_model_path = '/****/****/model_new_try0408.pth'
 
 - Provide the paths to the saved pre-trained LSTM model which will be now be used for further training (fine-tuning) and the already trained SMILES predictor that will be used for the evaluation of the reinforcement learning rewards.
 
-- `trained_lstm_path`: File path to the pre-trained LSTM model
+- `trained_lstm_path (str)`: File path to the pre-trained LSTM model
 
-- `trained_mlp_path`: Path to the trained MLP model. The MLP model is used here as a predictor to evaluate the quality of the sequences generated by the LSTM model
+- `trained_mlp_path (str)`: Path to the trained MLP model. The MLP model is used here as a predictor to evaluate the quality of the sequences generated by the LSTM model
 
 > [!TIP]
 If the SMILES Predictor isn't ready pause here and continue later after training the MLP watch workflow or follow the next section **SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation**
@@ -440,10 +484,10 @@ If the SMILES Predictor isn't ready pause here and continue later after training
 
 - This class implements the fine-tuning of the SMILES Generator model with a reinforcement learning approach based on classification by the SMILES Predictor model.
 
-1. Sampling: The model generates a series of sequences (DeepSMILES).
+1. **Sampling:** The model generates a series of sequences (DeepSMILES).
     - `generated_deepsmiles = self.model.generate_deepsmiles(num_samples=1, max_length=100)[0]` Generates DeepSMILES sequences and converts them to SMILES `generated_smiles = self.model.convert_deepsmiles_to_smiles([generated_deepsmiles])[0]`. Validates the generated SMILES and sorts out invalid ones.
 
-2. Rewarding: Each sequence receives a reward based on its quality.
+2. **Rewarding:** Each sequence receives a reward based on its quality.
 
     - Evaluates the SMILES generated using the MLP model.
 
@@ -459,7 +503,9 @@ if score == 1:
     axl_classified_count += 1
     axl_classified_smiles_list.append(generated_smiles)
     reward = 2.5
+```
 
+```bash
 else:
     non_axl_classified_count += 1
     non_axl_classified_smiles_list.append(generated_smiles)
@@ -473,25 +519,25 @@ else:
     reward = -7.5
 ```
 
-3. log-probs calculation: For each sequence, the log probability of its generation is calculated.
+3. **Log-Probs calculation:** For each sequence, the log probability of its generation is calculated.
 
     - `logit, _ = self.model(sequence)`: The generated sequence input `(sequence)` is passed through the model `(self.model)`. The model returns `logits`, which represent the raw values of the probabilities over the entire vocabulary for each position in the sequence. These `logits` are passed through the log softmax function `(F.log_softmax)` to calculate the log probabilities `(log_probs)`. For each position in the sequence, the log probability of the actual generated token is extracted. 
     
     - `log_probs.append(log_prob.sum())`: The sum of the log probabilities for the entire sequence is calculated and added to `log_probs`. This sum represents the log probability of the entire generated sequence.
 
-4. loss calculation: A policy loss is calculated, which indicates how the model should adjust its probabilities in order to obtain more positive rewards in the future.
+4. **Loss calculation:** A policy loss is calculated, which indicates how the model should adjust its probabilities in order to obtain more positive rewards in the future.
 
     - `policy_loss = -log_probs * rewards`: The product of log_probs and rewards gives the value that indicates how well the model generated this sequence based on the reward received. The negative sign (`-`) is used because we want to minimise the loss, but the goal is to maximise the rewards (higher rewards for better sequences).
 
     - `policy_loss = policy_loss.mean()`: The average policy loss over all generated sequences is calculated. This average value is used as the final loss that the model wants to minimise.
 
-5. backpropagation: The calculated loss is used for the backpropagation to calculate the gradients and update the weights of the model.
+5. **Backpropagation:** The calculated loss is used for the backpropagation to calculate the gradients and update the weights of the model.
 
     - `self.optimizer.zero_grad()`: Before calculating the gradients, all previously calculated gradients are set to zero
 
     - `policy_loss.backward()`: Calculates the gradients of the policy loss with respect to all parameters in the model. These gradients indicate the direction and amount of adjustment required for each model parameter to minimise the loss.
 
-6. optimisation: The optimiser parameters are updated to improve the model.
+6. **Optimisation:** The optimiser parameters are updated to improve the model.
 
     - `self.optimizer.step()`: After the gradients have been calculated, the optimiser `Adam` adjusts the model parameters based on these gradients.
 
@@ -528,17 +574,81 @@ trainer_phase2 = SmilesTrainerPhase2(
 
 - Logs the number of generated, valid and AXL-classified SMILES as well as the total rewards.
 
+
+
+### Plotting
+
 - By plotting the generated and classified count and accuracy metrics over the training epochs, you can gain deeper insights into the behaviour of the model during the training process, evaluating model performance and react accordingly. 
 
 
+```bash
+    def plot_accuracy(train_accuracy, total_accuracy, epochs):
+        plt.figure(figsize=(14, 6))
+        plt.plot(epochs, train_accuracy, label='Training Accuracy')
+        plt.plot(epochs, total_accuracy, label='Total Accuracy')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.title('Training and Total Accuracy Progress')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+```
+
+```bash
+    def plot_generated_smiles(generated_smiles_counts, axl_classified_counts, epochs):
+        plt.figure(figsize=(14, 6))
+        plt.plot(epochs, generated_smiles_counts, label='Generated SMILES')
+        plt.plot(epochs, axl_classified_counts, label='AXL Classified SMILES')
+        plt.xlabel('Epochs')
+        plt.ylabel('Count')
+        plt.title('Generated SMILES and AXL Classified SMILES Count')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+    plt.tight_layout()
+    plt.show()
+```
+
+- `plot_accuracy`: Visualises the accuracy of the model during training. The training accuracy and the overall accuracy are visualised.
+
+- `plot_generated_smiles`: Visualises the ratio of generated SMILES and AXL-classified SMILES across the epochs.
 
 
 ## SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation
 
 
-## Descriptors
+### Device Selection
 
-The following descriptors are calculated for each molecule:
+The primary purpose of device selection is to determine whether the computations will be performed on a CPU or a GPU. The choice of device can significantly impact the training and inference speed of deep learning models, especially those involving large datasets and complex architectures.
+
+- **Checking GPU Availability:** The code starts by checking if a CUDA-capable GPU is available on the machine. This is done using the function `torch.cuda.is_available()`.
+
+- **If a GPU is Available:** If a CUDA-compatible GPU is found, the device is set to cuda using `torch.device("cuda")`. This setting indicates that the model and its computations will be transferred to the GPU, which can provide significant speed-ups due to its parallel processing capabilities.
+
+- **If a GPU is Not Available:** If no compatible GPU is detected, the device is set to cpu using `torch.device("cpu")`. This means that all computations will be performed on the CPU.
+
+
+
+
+### Load Input Data
+
+- `def load_data(file_path)`: Reads in a text file containing a list of SMILES strings.
+
+- `smiles_data_path (str):` Path for the input file, which contains a general collection of SMILES strings.
+
+- `smiles_axl_inhibitors_path (str):` Path for a second input file containing only AXL kinase inhibitors SMILES.
+
+
+
+
+### Descriptors
+
+- `calculate_descriptors`: Function that calculates chemical descriptors for a given molecule. Descriptors are numerical values that represent certain physical, chemical or structural properties of a molecule. These properties can be used in machine learning models to make predictions about the activity, toxicity or other characteristics of molecules.
+
+- `Chem.MolFromSmiles(smiles)`: Function converts a SMILES string into an RDKit molecule object (`mol`). If the SMILES string is invalid and no molecule object can be created, `None` is returned. This means that the SMILES string was invalid and no descriptors can be calculated.
+
+**The following descriptors are calculated for each molecule:**
 
 - **Morgan Fingerprints**: A type of molecular fingerprint used for similarity searching, based on the circular substructures around each atom, and encoded as binary vectors. Morgan fingerprints are particularly useful in capturing the local environment of atoms within a molecule. They are generated by considering circular neighborhoods of varying radii around each atom, and then hashing these neighborhoods into fixed-length binary vectors.
 - **AlogP**: A measure of the lipophilicity (fat-loving nature) of a molecule, representing its ability to dissolve in fats, oils, lipids, and non-polar solvents.
@@ -577,110 +687,334 @@ The following descriptors are calculated for each molecule:
 - **HallKierAlpha**: An index representing the overall branching and complexity of a molecule's structure.
 
 
-## Target Variable
+- Calculation of molecular descriptors for two different sets of SMILES data: general molecules and specific AXL kinase inhibitors. The calculated descriptors are then stored in a Pandas DataFrame, together with Morgan fingerprints extracted into separate columns.
 
-The target variable indicates whether a molecule is an AXL kinase inhibitor or not:
+1. `data = []`: An empty list data is initialised to store the descriptors for all molecules.
 
-- `Target = 1`: AXL kinase inhibitor
-- `Target = 0`: Other molecules
+    - The **target** variable indicates whether a molecule is an AXL kinase inhibitor or not:
 
 
-## Steps to Create the Training Dataset
+```bash
+Target = 1: AXL kinase inhibitor
+Target = 0: Other molecules
+```
 
-1. **Read SMILES Data**:
-    - Two files are used: one (`smiles.txt`) containing various molecules, and another (`axl_inhibitors.txt`) with known AXL kinase inhibitors.
+2. Calculation of the descriptors for general SMILES data:
 
-2. **Calculate Descriptors**:
-    - For each molecule, various molecular descriptors are calculated.
+    - `for index, smiles in enumerate(smiles_data)`: Iterates through the list smiles_data, where index is the current index and smiles is the current SMILES string.
 
-3. **Set Target Variable**:
-    - For molecules from `smiles.txt`, set `Target` to 0.
-    - For molecules from `axl_inhibitors.txt`, set `Target` to 1.
+    - `descriptors = calculate_descriptors(smiles)`: Calculates the descriptors for the current SMILES string using the calculate_descriptors function.
 
-## Example
+    - `if descriptors is not None`: Checks whether the calculation was successful (i.e. the SMILES string was valid).
 
-Given the following data:
+    - `descriptors["SMILES"] = smiles`: Adds the SMILES string to the descriptors.
 
-- `smiles.txt`:
-    ```
+    - `descriptors["Target"] = 0`: Sets the **target label to 0** to indicate that it is a generic molecule.
+
+    - `data.append(descriptors)`: Adds the descriptor dictionary to the data list.
+
+
+```bash
+#example
+- smiles.txt:
+    
     CCO
     CCC
     COC
-    ```
+```
 
-- `axl_inhibitors.txt`:
-    ```
-    C1=CC=CC=C1
-    C2=CCN=C(C)C2
-    ```
+```bash
+#example
+- smiles.txt`:
 
-The descriptors and targets are assigned as follows:
-
-- `smiles.txt`:
-    ```
     CCO: Descriptors + Target = 0
     CCC: Descriptors + Target = 0
     COC: Descriptors + Target = 0
-    ```
+```
 
-- `axl_inhibitors.txt`:
-    ```
+3. Calculation of the descriptors for AXL kinase inhibitors:
+
+    - `for index, smiles in enumerate(smiles_axl_inhibitors)`: Iterates through the list smiles_axl_inhibitors.
+
+    - `descriptors = calculate_descriptors(smiles)`: Calculates the descriptors for the current SMILES string.
+    
+    - `if descriptors is not None`: Checks whether the calculation was successful.
+
+    - `descriptors["SMILES"] = smiles`: Adds the SMILES string to the descriptors.
+
+    - `descriptors["Target"] = 1`: Sets the **target label to 1** to indicate that it is an AXL kinase inhibitor.
+
+    - `data.append(descriptors)`:Adds the descriptor dictionary to the data list.
+
+
+```bash
+#example
+- axl_inhibitors.txt:
+    
+    C1=CC=CC=C1
+    C2=CCN=C(C)C2
+```
+
+```bash
+#example
+- axl_inhibitors.txt:
+
     C1=CC=CC=C1: Descriptors + Target = 1
     C2=CCN=C(C)C2: Descriptors + Target = 1
-    ```
+```
 
-## Goal of the Model
+4. Creation of a DataFrame:
 
-The model aims to utilize the descriptors to learn whether a molecule is an AXL kinase inhibitor (`Target = 1`) or not (`Target = 0`).
+    - `df = pd.DataFrame(data)`: Converts the list data into a Pandas DataFrame df, where each row corresponds to a molecule and each column to a descriptor.
 
+5. Processing of the Morgan fingerprints:
 
-## Training and Validation
+    - `fingerprints = np.array([list(fp) for fp in df["MorganFingerprint"].values])`: Extracts the Morgan fingerprints from the DataFrame `df` and converts them into a numpy array fingerprints. Each fingerprint is converted into a list of bits.
 
-1. **Train-Test Split**:
-    - The data is split into training and test datasets. The training set is used to train the model, and the test set is used to evaluate the model's performance.
+6. Merge the main DataFrame with the fingerprint data:
 
-2. **Model Architecture**:
-    - A Multi-Layer Perceptron (MLP) is used to process the descriptors and learn to classify molecules as AXL kinase inhibitors or not.
+    - `df = df.drop(columns=["MorganFingerprint"])`: Removes the original MorganFingerprint column from `df` as the fingerprint data is moved to `fingerprints_df`.
 
-3. **Training the Model**:
-    - The model is trained on the training dataset, adjusting its weights to improve predictions.
+    - `df = pd.concat([df, fingerprints_df], axis=1)`: Adds `fingerprints_df` to the main DataFrame `df` by appending the fingerprint columns to the main DataFrame.
 
-4. **Validation**:
-    - After training, the model is validated on the test dataset to assess its accuracy and performance.
+- The resulting DataFrame df contains all calculated molecular descriptors, including the extracted Morgan fingerprints, for each molecule in the two SMILES datasets.
 
 
 
 
-## Results and Visualization
+### Define the Dataset
 
-- The training and test losses are plotted to visualize the training progress.
-- The accuracy for each label (AXL kinase inhibitors and other molecules) is plotted for both training and test datasets.
-- Confusion matrices are plotted to visualize the model's performance on the training and test datasets.
+- Process of splitting the data into training and test sets, converting this data into PyTorch tensors and creating DataLoaders to efficiently process the data during training
 
+- `X = df.drop(columns=["SMILES", "Target"])`: Removes the columns "SMILES" and "Target" from the DataFrame `df` to create the feature matrix `X`. This matrix contains all numerical descriptors and fingerprints that serve as input data for the model.
 
-## Saving and Loading the Model
+- `y = df["Target"]`: Extracts the target variable `y` from the DataFrame, which indicates whether the molecules are general molecules (`0`) or AXL kinase inhibitors (`1`).
 
-- The trained model is saved to a file (`model_predictor.pth`) and can be loaded for further predictions or evaluations.
+- `train_test_split(X, y, test_size=0.2, random_state=42)`: Splits the data into training and test sets. `test_size=0.2` means that 20% of the data is used as test data. `random_state=42` ensures that the division is reproducible.
 
+- Converts the Pandas DataFrames `X_train`, `y_train`, `X_test`, and `y_test` into PyTorch tensors.
 
-
-
-
+- DataLoader for train and test data will be created
 
 
+```bash
+batch_size = 16
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+```
+
+- Key Input Parameters:
+
+- `Batch_size (int)`: Sets the size of the batches which means that the data is processed in batches of x each.
 
 
 
 
+### Define the MLP model
+
+
+```bash
+class MLP(nn.Module):
+    def __init__(self, input_size):
+        super(MLP, self).__init__()
+        self.fc1 = nn.Linear(input_size, 512)
+        self.bn1 = nn.BatchNorm1d(512)
+        self.fc2 = nn.Linear(512, 256)
+        self.bn2 = nn.BatchNorm1d(256)
+        self.fc3 = nn.Linear(256, 64)
+        self.bn3 = nn.BatchNorm1d(64)
+        self.fc4 = nn.Linear(64, 32)
+        self.bn4 = nn.BatchNorm1d(32)
+        self.fc5 = nn.Linear(32, 8)
+        self.bn5 = nn.BatchNorm1d(8)
+        self.fc6 = nn.Linear(8, 2)
+        self.dropout = nn.Dropout(0.4)
+        
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = torch.relu(self.fc2(x))
+        x = self.dropout(x)
+        x = torch.relu(self.fc3(x))
+        x = self.dropout(x)
+        x = torch.relu(self.fc4(x))
+        x = torch.relu(self.fc5(x))
+        x = self.fc6(x)
+        return x
+```
+
+- A **Multi-Layer Perceptron (MLP)** is used to process the descriptors and learn to classify molecules as AXL kinase inhibitors or not. An MLP is a feedforward artificial neural network that is used to classify molecules into two categories. It consists of several **fully connected layers**, **batch normalisation** and **dropout** to improve model performance and avoid overfitting.
+
+1. Input layer: The input layer receives vectors of molecular descriptors, the number of which is determined by the number of features in the training data.
+
+2. Hidden layers: There are a total of five fully connected dense hidden layers in the architecture:
+
+    - **Activation function**: a ReLU (Rectified Linear Unit) is applied to perform non-linear transformations.
+
+    - **Batch normalisation**: A batch normalisation layer is inserted after each fully connected layer. These layers normalise the outputs of the previous layers, which can improve the stability and speed of the training process.
+
+    - **Dropout**: This is a regularisation technique in which a certain rate of neurons is randomly deactivated during training. This helps to prevent overfitting.
+
+3.  Output layer: The final output layer of the MLP consists of 2 neurons. These represent the two classes of the classification problem (e.g. AXL kinase inhibitor and non-inhibitor). This layer outputs raw scores (`logits`), which can then be used to calculate probabilities for the classes.
+
+> [!TIP]
+You can adjust the layer-size or add more layers to the MLP if you want to improve the results on your own dataset.
 
 
 
 
+### Class Weights
+
+- `class_weights`: A tensor that contains the weights for the classes in the training data. These are used to equalise the imbalance between the classes. The positive examples are given a higher weight to compensate for their relatively lower occurrence compared to negative examples.
+
+- `focal_CE_loss`: This function calculates the focal loss, a modified version of the cross-entropy loss function. It focusses the training on examples that are difficult to classify.
+
+    - `scores`: The predictions of the model (raw scores or logits before applying the softmax function).
+
+    - `labels`: The actual labels of the data.
+
+    - `gamma`: A hyperparameter that controls the influence of the examples that are difficult to classify. Higher values of gamma increase the focus on these examples.
 
 
-## Results
+```bash
+criterion = F.cross_entropy
+criterion = focal_CE_loss
+optimizer = optim.Adam(model.parameters(), lr=0.00005)
+```
 
-The models generate SMILES strings based on the training data and validate their performance using known AXL kinase inhibitors. The results are plotted for loss and accuracy over epochs.
+- `optimizer = optim.Adam(model.parameters())`: Defines the optimiser that updates the weights of the model based on the calculated gradients. The **Adam optimiser** is used here
+
+- Key Input Parameters:
+
+    - `lr`: Sets the learning rate to a small value to ensure stable and slow weight updates, which is particularly important to avoid overfitting to the training data here.
+
+
+
+
+### Define the Trainer
+
+- The trainer carries out the complete training of the model, monitors the performance and saves the results for later analysis and visualisation.
+
+
+```bash
+num_epochs = 50
+```
+
+- Key Input Parameters:
+
+    - `num_epochs`: Number of training runs.
+
+
+- **Epoch Initialisation:**
+    
+    - At the beginning of each epoch, the model is set to training mode `model.train()`.
+
+    - The total loss `running_loss` is initialised. It accumulates the loss for the entire epoch so that the average loss can be calculated later.
+
+- **Training Loop:**
+
+    - **Reset gradient:** Before a new step of the backpropagation process begins, the gradient must be set to zero `optimiser.zero_grad()`.
+
+    - **Prediction and loss calculation:** The model processes the input data (`inputs`) and generates outputs (`outputs`). These outputs are compared with the target values (`labels`) to calculate the loss (`loss`)
+    
+    - **Backward propagation and weight update:** loss.backward() calculates the gradients of the loss function. The optimiser (`optimizer.step()`) updates the weights of the model based on these gradients to minimise the loss.
+    
+    - **Add up total loss:** The loss for the current batch is added to `running_loss`. Multiplying by `inputs.size(0)` ensures that the loss is correctly weighted for the number of samples in the batch.
+
+- **Loss Calculation:**
+
+    - After processing all batches in an epoch, the average loss is calculated `epoch_loss = running_loss / len(train_loader.dataset)`. This average loss (`epoch_loss`) indicates how well the model can predict the training data.
+
+- **Training Accuracy Calculation:**
+
+    - After completing the training process for an epoch, the model is set to evaluation mode (`model.eval()`). The predictions of the model (`outputs`) are compared with the actual labels (`labels`) to count the number of correct predictions (`train_correct`) and the total number of examples (`train_total`). The accuracy for each class is then calculated `train_accuracy = {label: 100 * train_correct[label] / train_total[label]}`, which gives the percentage of correct predictions in relation to the total number of examples of that class.
+
+- **Test Accuracy Calculation:**
+
+    - After calculating the training accuracy, a similar procedure is performed on the test data set. The test accuracy provides information on how well the model performs on unseen data and is also logged separately for each class. This evaluation is crucial for recognising overfitting
+
+
+
+
+### Save Model
+
+
+```bash
+save_model_path = 'model_predictor_0407.pth'
+```
+
+- `save_model_path (str)`: This path specifies where the model is to be saved after training. It should always be filled with a valid path otherwise the model won`t be saved.
+
+
+
+
+### Plotting
+
+- By plotting the generated and classified count and accuracy metrics over the training epochs, you can gain deeper insights into the behaviour of the model during the training process, evaluating model performance and react accordingly. 
+
+
+```bash
+def plot_losses(train_losses, test_losses):
+    plt.figure(figsize=(10, 5))
+    plt.plot(train_losses, label='Training loss')
+    plt.plot(test_losses, label='Test loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training and Test Loss Progress')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+```
+
+```bash
+def plot_label_accuracy(label_accuracies, label_name):
+    plt.figure(figsize=(10, 5))
+    for label in [0, 1]:
+        plt.plot(label_accuracies[label], label=f'{label_name} Accuracy - Label {label}')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.title(f'{label_name} Accuracy Progress')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+```
+
+```bash
+def plot_confusion_matrix(mdl, data, 
+                          class_names=None, device=torch.device("cpu")):
+
+    preds = torch.tensor([]).to(device)
+    targets = torch.tensor([]).to(device)
+    mdl = mdl.to(device)
+    mdl.eval()
+
+    pbar = tqdm(data, desc="predict", file=sys.stdout)
+    for x,y in pbar:
+        x,y = x.to(device), y.to(device)
+        p = mdl(x)
+        preds = torch.cat((preds, torch.argmax(p, dim=1)), dim=0)
+        targets = torch.cat((targets, y), dim=0)
+
+    preds, targets = preds.to("cpu"), targets.to("cpu")
+    print(preds.shape, targets.shape)
+    cm = MulticlassConfusionMatrix(num_classes=2)
+    cm.update(preds, targets)
+    fig, ax = cm.plot(labels=class_names)
+    return fig
+```
+
+- `plot_losses`: Visualises the progress in loss during training.
+
+- `plot_label_accuracy`: Visualises the accuracy for different labels over the training time.
+
+- `plot_confusion_matrix`: Visualises a confuion matrix for the predictions of a model compared to the actual labels. A confuion matrix is an important tool for evaluating the classification performance of a model as it shows the number of correctly and incorrectly classified examples for each class.
+
+
+
+
+--------------------------------------------------------
+
+
 
 ## References
 
@@ -689,7 +1023,4 @@ The models generate SMILES strings based on the training data and validate their
 - PyTorch: An open-source machine learning library.
 
 
-
-
-- `chembl_smiles.txt`: Contains 1.8 million molecule SMILES strings from Chembl Database for the base training of the LSTM
-    - `ChemblDatensatzAXLKinase.txt`: Contains known AXL kinase inhibitors from Chembl / NIB Database for the training of the Siamse Network
+## Licence
