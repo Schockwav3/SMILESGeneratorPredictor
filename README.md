@@ -1012,13 +1012,13 @@ def plot_confusion_matrix(mdl, data,
 - `plot_confusion_matrix`: Visualises a confuion matrix for the predictions of a model compared to the actual labels. A confuion matrix is an important tool for evaluating the classification performance of a model as it shows the number of correctly and incorrectly classified examples for each class.
 
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_loss.png" width="300" height="300">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_loss.png" width="500" height="300">
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_accurancy_test.png" width="300" height="300">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_accurancy_test.png" width="500" height="300">
 
 <p align="center">
-  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/Confusion_matrix_training.png" alt="Confusion_matrix_training" width="300"/>
-  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/Confusion_matrix_test.png" alt="Confusion_matrix_test" width="300"/>
+  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_training.png" alt="Confusion_matrix_training" width="300"/>
+  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_test.png" alt="Confusion_matrix_test" width="300"/>
 </p>
 
 
