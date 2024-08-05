@@ -131,7 +131,7 @@ This will give you a complete overview of the **SMILES GeneratorPredictor** proj
 
 This will give you a complete overview of the **SMILES GeneratorPredictor** Workflow:
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflow.png" width="600" height="1360">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflow.png" width="500" height="1160">
 
 
 
@@ -1012,13 +1012,13 @@ def plot_confusion_matrix(mdl, data,
 - `plot_confusion_matrix`: Visualises a confuion matrix for the predictions of a model compared to the actual labels. A confuion matrix is an important tool for evaluating the classification performance of a model as it shows the number of correctly and incorrectly classified examples for each class.
 
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_loss.png" width="400" height="250">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_loss.png" width="450" height="280">
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_accurancy_test.png" width="400" height="250">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_accurancy_test.png" width="450" height="280">
 
 <p align="left">
-  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_training.png" alt="Confusion_matrix_training" width="250"/>
-  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_test.png" alt="Confusion_matrix_test" width="250"/>
+  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_training.png" alt="Confusion_matrix_training" width="280"/>
+  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_test.png" alt="Confusion_matrix_test" width="280"/>
 </p>
 
 
