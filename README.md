@@ -131,7 +131,7 @@ This will give you a complete overview of the **SMILES GeneratorPredictor** proj
 
 This will give you a complete overview of the **SMILES GeneratorPredictor** Workflow:
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflow.png" width="500" height="1160">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflow.png" width="500" height="1180">
 
 
 
@@ -788,6 +788,12 @@ Target = 0: Other molecules
 
 - Process of splitting the data into training and test sets, converting this data into PyTorch tensors and creating DataLoaders to efficiently process the data during training
 
+- In many real data sets, the classes are often unevenly distributed (**class imbalance**). This can cause problems in a binary classification problem. Machine learning models tend to favour the majority class as it occurs more frequently. This leads to poorer recognition of the minority class. By increasing the number of minority class examples, the model is forced to focus on this class as well and not just favour the majority class.
+
+    - `axl_data = df[df['Target'] == 1]`: A subset of the DataFrame `df` is created, which only contains the data rows in which the Target column has the value `1`. This means that axl_data only represents the data points that are classified as AXL kinase inhibitors.
+
+    - `df = pd.concat([df, axl_data] * 3)`: Duplicates the data from `axl_data` three times and inserts it back into the original DataFrame `df`.
+
 - `X = df.drop(columns=["SMILES", "Target"])`: Removes the columns "SMILES" and "Target" from the DataFrame `df` to create the feature matrix `X`. This matrix contains all numerical descriptors and fingerprints that serve as input data for the model.
 
 - `y = df["Target"]`: Extracts the target variable `y` from the DataFrame, which indicates whether the molecules are general molecules (`0`) or AXL kinase inhibitors (`1`).
@@ -800,7 +806,7 @@ Target = 0: Other molecules
 
 
 ```bash
-batch_size = 16
+batch_size = 32
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 ```
@@ -867,7 +873,7 @@ You can adjust the layer-size or add more layers to the MLP if you want to impro
 
 ### Class Weights
 
-- `class_weights`: A tensor that contains the weights for the classes in the training data. These are used to equalise the imbalance between the classes. The positive examples are given a higher weight to compensate for their relatively lower occurrence compared to negative examples.
+- `class_weights`: A tensor that contains the weights for the classes in the training data. These are used to equalise the imbalance between the classes (**class imbalance**). The positive examples are given a higher weight to compensate for their relatively lower occurrence compared to negative examples.
 
 - `focal_CE_loss`: This function calculates the focal loss, a modified version of the cross-entropy loss function. It focusses the training on examples that are difficult to classify.
 
@@ -888,7 +894,28 @@ optimizer = optim.Adam(model.parameters(), lr=0.00005)
 
 - Key Input Parameters:
 
-    - `lr`: Sets the learning rate to a small value to ensure stable and slow weight updates, which is particularly important to avoid overfitting to the training data here.
+    - `lr (int)`: Sets the learning rate to a small value to ensure stable and slow weight updates, which is particularly important to avoid overfitting to the training data here.
+
+
+
+
+### Early Stopping
+
+- A technique used to stop model training when certain criteria are met. In this case, training is stopped as soon as the specified accuracy targets for both classes (**CHEMBL** and **AXL**) in the test dataset are met. This ensures that the model performs well for both the majority class (**CHEMBL**) and the minority class (**AXL**), which is particularly important when the accurate classification of the minority class is of high importance.
+
+```bash
+early_stopping_active = True 
+target_accuracy_chembl = 97.5
+target_accuracy_axl = 99.5
+```
+
+- Key Input Parameters:
+
+    - `early_stopping_active (boolean)`: If early stopping is active, the training of the model is terminated prematurely as soon as the predefined conditions are reached.
+
+    - `target_accuracy_chembl (int)`: This variable defines the target accuracy (in per cent) for the CHEMBL class (**target = 0**).
+
+    - `target_accuracy_axl (int)`: This variable defines the target accuracy (in per cent) for the class AXL kinase inhibitors **(target = 1)**. This class is the minority class in this classification problem. A higher target accuracy for this class reflects the importance of a precise classification for this particular group. 
 
 
 
@@ -899,14 +926,13 @@ optimizer = optim.Adam(model.parameters(), lr=0.00005)
 
 
 ```bash
-num_epochs = 50
+num_epochs = 150
 ```
 
 - Key Input Parameters:
 
-    - `num_epochs`: Number of training runs.
-
-
+    - `num_epochs (int)`: Number of training runs.
+     
 - **Epoch Initialisation:**
     
     - At the beginning of each epoch, the model is set to training mode `model.train()`.
@@ -934,6 +960,23 @@ num_epochs = 50
 - **Test Accuracy Calculation:**
 
     - After calculating the training accuracy, a similar procedure is performed on the test data set. The test accuracy provides information on how well the model performs on unseen data and is also logged separately for each class. This evaluation is crucial for recognising overfitting
+
+
+
+
+### Extract Feature Importance
+
+- This function calculates the importance of features based on the weights of the first layer of a neural network. The idea behind this is that larger absolute weights indicate a greater importance of the corresponding feature for the predictions of the model.
+
+1 **Extract the weights**: The function extracts the weights of the first layer (`fc1`) of the model and calculates the mean absolute weights over all neurons.
+
+2 **Filtering the features**: If a `prefix` is specified, only the features whose names start with this prefix are considered. Otherwise, features beginning with "FP_" are excluded (typical for fingerprints).
+
+3 **Sort by importance**: Features are sorted by their mean absolute weights.
+
+4 **Select top features**: If `top_n` is specified, only the most important `top_n` features are returned.
+
+5 **Output**: The function returns the names and weights of the most important features.
 
 
 
@@ -982,8 +1025,7 @@ def plot_label_accuracy(label_accuracies, label_name):
 ```
 
 ```bash
-def plot_confusion_matrix(mdl, data, 
-                          class_names=None, device=torch.device("cpu")):
+def plot_confusion_matrix(mdl, data, class_names=None, device=torch.device("cpu")):
 
     preds = torch.tensor([]).to(device)
     targets = torch.tensor([]).to(device)
@@ -1001,8 +1043,20 @@ def plot_confusion_matrix(mdl, data,
     print(preds.shape, targets.shape)
     cm = MulticlassConfusionMatrix(num_classes=2)
     cm.update(preds, targets)
-    fig, ax = cm.plot(labels=class_names)
+    fig, _ = cm.plot(labels=class_names)
     return fig
+```
+
+```bash
+# Plot-Funktion für Feature-Importances
+def plot_feature_importance(top_features, top_weights, title):
+    plt.figure(figsize=(14, 10))
+    plt.barh(range(len(top_features)), top_weights[::-1], align='center')
+    plt.yticks(range(len(top_features)), top_features[::-1], fontsize=8)
+    plt.xlabel('Mean Absolute Weight')
+    plt.title(title)
+    plt.grid(True)
+    plt.show()
 ```
 
 - `plot_losses`: Visualises the progress in loss during training.
@@ -1011,17 +1065,19 @@ def plot_confusion_matrix(mdl, data,
 
 - `plot_confusion_matrix`: Visualises a confuion matrix for the predictions of a model compared to the actual labels. A confuion matrix is an important tool for evaluating the classification performance of a model as it shows the number of correctly and incorrectly classified examples for each class.
 
+- `plot_feature_importance`: Visualises the most important features (descriptors) of the neural network. Helps to understand which descriptors make the greatest relative contribution to the classification.
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_loss.png" width="450" height="280">
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_accurancy_test.png" width="450" height="280">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_loss.png" width="450" height="300">
+
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/predictor_accurancy_test.png" width="450" height="300">
 
 <p align="left">
-  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_training.png" alt="Confusion_matrix_training" width="280"/>
-  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_test.png" alt="Confusion_matrix_test" width="280"/>
+  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_training.png" alt="Confusion_matrix_training" width="300"/>
+  <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_test.png" alt="Confusion_matrix_test" width="300"/>
 </p>
 
-
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/feature_plott.png" width="450" height="300">
 
 
 ## References
