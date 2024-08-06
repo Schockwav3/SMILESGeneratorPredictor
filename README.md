@@ -110,7 +110,7 @@ Set up all required data
     Target = 0: Other molecules
 
 > [!TIP] 
-You should search for as much target SMILES for your prediction class input as possible. In my example I found a total of 4564 on ChEMBL and NIH. For the generic smiles data I took a ratio of around 1:2 so a total of 10812 random non target SMILES. 
+You should search for as much target SMILES for your prediction class input as possible. In my example I found a total of 4564 on ChEMBL and NIH. For the generic smiles data I took a ratio of around 1:2 so a total of 10812 random non target SMILES and added some class imbalance techniques to compensate. 
 
 
    - Once the network has been trained, it will be saved under `save_model_path`. The trained SMILES Predictor model can then be used to classify SMILES.
@@ -1048,7 +1048,6 @@ def plot_confusion_matrix(mdl, data, class_names=None, device=torch.device("cpu"
 ```
 
 ```bash
-# Plot-Funktion für Feature-Importances
 def plot_feature_importance(top_features, top_weights, title):
     plt.figure(figsize=(14, 10))
     plt.barh(range(len(top_features)), top_weights[::-1], align='center')
