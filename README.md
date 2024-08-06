@@ -1076,7 +1076,7 @@ def plot_feature_importance(top_features, top_weights, title):
   <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/confusion_matrix_test.png" alt="Confusion_matrix_test" width="300"/>
 </p>
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/feature_plott.png" width="450" height="300">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/feature_plott_descriptors.png" width="450" height="300">
 
 
 ## References
