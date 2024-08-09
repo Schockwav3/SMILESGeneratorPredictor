@@ -15,12 +15,14 @@ The second part of this project involves a Predictor. The machine learning model
 1. [Introduction](#introduction)
 1. [Setup and Installation](#setup-and-installation)
 1. [Requirements](#requirements)
-2. [Project Structure](#project-structure)
-3. [Workflow](#workflow)
-4. [SMILES Generator](#smiles-generator)
-5. [SMILES Predictor](#smiles-predictor)
-6. [References](references)
-7. [Licence](licence)
+2. [Training Structure](#training-structure)
+3. [Project Workflow](#project-workflow)
+4. [Train SMILES Generator](#train-smiles-generator-using-deepsmiles-lstm-and-reinforcement-learning-with-smiles-predictor)
+5. [Train SMILES Predictor](#train-smiles-predictor-using-a-mlp-and-morgan-fingerprints-molecule-descriptors-for-validation)
+6. [Running SMILES Generator](#smiles-generator)
+7. [Running SMILES Predictor](#smiles-predictor)
+8. [References](references)
+9. [Licence](licence)
 
 
 
@@ -77,7 +79,7 @@ The combined approach makes it possible to generate not only a large number of s
 
 ## Requirements
 
-Set up all required data
+Set up all required data and parameters (these are the parameters which I have identified to achieve the best results)
 
 - **Phase 1 SMILES Generator**
 
@@ -93,6 +95,19 @@ Set up all required data
  It is also possible to use **Transfer Learning** to a second more specific dataset of SMILES. To do this, simply save the model after the first training and activate `use_pretrained_model = True`, adjust the parameters, define the second / new dataset as new `file_path` and run the code again.
 
 
+```bash
+LEARNING_RATE = 0.0010
+BATCH_SIZE = 256
+EPOCHS = 25
+AUGMENT = True
+AUGMENT_FACTOR = 5
+USE_PRETRAINED_MODEL = False
+LOAD_MODEL_PATH = '-'
+SAVE_MODEL_PATH = '/xxx/xxx/model_generator_pretrained_0708.pth'
+FILE_PATH = '/xxx/xxx/chembl_smiles.txt'
+ACTIVATE_FINE_TUNING = False
+```
+
 - **Phase 2 SMILES Generator**
 
    - First you need the pretrained SMILES Generator model from phase 1, simply enter the path under `trained_lstm_path` in the second part of the code.
@@ -102,6 +117,17 @@ Set up all required data
    - Once the network has been finally trained, it will be saved under `save_model_path` in the second part of the code. The fully trained SMILES Generator model can then be used to generate specific SMILES.
 
 
+```bash
+TRAINED_LSTM_PATH = '/xxx/xxx/model_new_try0907.pth'
+TRAINED_MLP_PATH = '/xxx/xxx/model_predictor_0407.pth'
+FINE_TUNE_EPOCHS = 10
+FINE_TUNE_LEARNING_RATE = 0.00002
+FINE_TUNE_BATCH_SIZE = 32
+FINE_TUNE_SAVE_MODEL_PATH = '/xxx/xxx/finetuned_model2507.pth'
+NUM_GENERATED_SMILES = 400
+REWARD_SCALE = 1
+```
+
 - **Phase 3 SMILES Predictor**
 
    -  You need two files as input. One file **smiles_data** containing different generic molecules enter the path under `smiles_data_path` and one file with targets **smiles_axl_inhibitors** that the model should learn to predict. In this case, we want to train the model to distinguish whether a molecule is an AXL kinase inhibitor or not. Update the path under `smiles_axl_inhibitors_path`.
@@ -110,24 +136,37 @@ Set up all required data
     Target = 0: Other molecules
 
 > [!TIP] 
-You should search for as much target SMILES for your prediction class input as possible. In my example I found a total of 4564 on ChEMBL and NIH. For the generic smiles data I took a ratio of around 1:2 so a total of 10812 random non target SMILES and added some class imbalance techniques to compensate. 
+You should search for as much target SMILES for your prediction class input as possible. In my example I found a total of 4564 on ChEMBL and NIH. For the generic smiles data I took a ratio of around 1:2 so a total of 10812 random non target SMILES and added some **class imbalance** techniques to compensate. 
 
 
    - Once the network has been trained, it will be saved under `save_model_path`. The trained SMILES Predictor model can then be used to classify SMILES.
 
 
+```bash
+SMILES_DATA_PATH = '/xxx/xxx/chembl_smiles_small.txt'
+SMILES_AXL_INHIBITORS_PATH = '/xxx/xxx/ChemblNIHDatensatzAXLKinase.txt'
+SAVE_MODEL_PATH = '/xxx/xxx/model_predictor_0708.pth'
+BATCH_SIZE = 64
+LEARNING_RATE = 0.00005
+NUM_EPOCHS = 150
+EARLY_STOPPING_ACTIVE = True
+TARGET_ACCURACY_CHEMBL = 97.1
+TARGET_ACCURACY_AXL = 99.6
+```
 
 
-## Project Structure
-
-This will give you a complete overview of the **SMILES GeneratorPredictor** project structure, all existing scripts in the repository and all required files:
-
-![Project Structure](https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/project_structure.png)
 
 
+## Training Structure
+
+This will give you a overview of the **SMILES GeneratorPredictor** training structure, all existing scripts in the repository and all required files:
+
+![Project Training Structure](https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/project_structure.png)
 
 
-## Workflow
+
+
+## Project Workflow
 
 This will give you a complete overview of the **SMILES GeneratorPredictor** Workflow:
 
@@ -136,7 +175,7 @@ This will give you a complete overview of the **SMILES GeneratorPredictor** Work
 
 
 
-## SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with SMILES Predictor
+## Train SMILES Generator using DeepSMILES LSTM and Reinforcement Learning with SMILES Predictor
 
 
 ### Device Selection
@@ -371,10 +410,9 @@ def plot_accuracy(self):
 - `plot_label_accuracy`: Visualises the accuracy for different labels over the training time.
 
 
-
 ```bash
 def __init__(self, model, train_dataloader, valid_dataloader, test_dataloader, 
-                 epochs=20, learning_rate=0.0010, batch_size=250, use_pretrained_model=None, load_model_path=None, save_model_path=None):
+                 epochs=EPOCHS, learning_rate=LEARNING_RATE, batch_size=BATCH_SIZE, use_pretrained_model=USE_PRETRAINED_MODEL, load_model_path=LOAD_MODEL_PATH, save_model_path=SAVE_MODEL_PATH):
 ```
 
 - Key Input Parameters:
@@ -385,6 +423,13 @@ def __init__(self, model, train_dataloader, valid_dataloader, test_dataloader,
 
     - `batch_size (int)`: The number of samples per batch to be loaded by the DataLoader.
 
+    - `use_pretrained_model (bool)`: If this variable is set to `True`, the model is not trained from scratch, it indicates that a pre-trained model should be used. It loads and uses weights that have already been learnt. Can be used for Transfer Learning or the fine-tuning (phase 2) process.
+
+    - `load_model_path (str)`: Specifies the file path where the pre-trained saved model is located.
+
+    - `save_model_path (str)`: This path specifies where the model is to be saved after pre-training or Transfer Learning. It should always be filled with a valid path otherwise the model won`t be saved.
+
+- These settings determine whether an already trained model should be used and where this model should be saved or loaded. This is useful for the application of Transfer Learning, where a model is based on previously learnt weights to reduce training time and improve performance. Or atleast to save the pre-trained model.
 
 
 
@@ -400,7 +445,7 @@ def __init__(self, model, train_dataloader, valid_dataloader, test_dataloader,
 
 
 ```bash
-def __init__(self, smiles_list, tokenizer, vocabulary, augment: bool = True, augment_factor: int = 4):
+def __init__(self, smiles_list, tokenizer, vocabulary, augment=AUGMENT, augment_factor=AUGMENT_FACTOR):
 ```
 
 - Key Input Parameters:
@@ -416,32 +461,12 @@ def __init__(self, smiles_list, tokenizer, vocabulary, augment: bool = True, aug
 
 
 ```bash
-file_path = '/****/****/chembl_smiles.txt'
+file_path = FILE_PATH
 ```
 
 - `file_path (str)`: Path to the SMILES file which includes the dataset for prelearning the SMILES Generator model. 
 
 - If Transfer Learning is activated, update the path to the new SMILES file which the pre-trained model should retrain. 
-
-
-
-
-### Save, Load and Transfer Learning
-
-- These settings determine whether an already trained model should be used and where this model should be saved or loaded. This is useful for the application of Transfer Learning, where a model is based on previously learnt weights to reduce training time and improve performance. Or atleast to save the pre-trained model.
-
-
-```bash
-use_pretrained_model = True
-load_model_path = '/****/****/model_new_try0907.pth'
-save_model_path = '/****/****/model_new_try0408.pth'
-```
-
-- `use_pretrained_model (bool)`: If this variable is set to `True`, the model is not trained from scratch, it indicates that a pre-trained model should be used. It loads and uses weights that have already been learnt. Can be used for Transfer Learning or the fine-tuning (phase 2) process.
-
-- `load_model_path (str)`: Specifies the file path where the pre-trained saved model is located.
-
-- `save_model_path (str)`: This path specifies where the model is to be saved after pre-training or Transfer Learning. It should always be filled with a valid path otherwise the model won`t be saved.
 
 
 
@@ -461,6 +486,11 @@ save_model_path = '/****/****/model_new_try0408.pth'
 
 - Provide the paths to the saved pre-trained LSTM model which will be now be used for further training (fine-tuning) and the already trained SMILES predictor that will be used for the evaluation of the reinforcement learning rewards.
 
+```bash
+trained_lstm_path = TRAINED_LSTM_PATH
+trained_mlp_path = TRAINED_MLP_PATH
+```
+
 - `trained_lstm_path (str)`: File path to the pre-trained LSTM model
 
 - `trained_mlp_path (str)`: Path to the trained MLP model. The MLP model is used here as a predictor to evaluate the quality of the sequences generated by the LSTM model
@@ -473,11 +503,28 @@ If the SMILES Predictor isn't ready pause here and continue later after training
 
 ### MLP Definition & Descriptors
 
-- `class MLP(nn.Module)`: Loads and defines the multilayer perceptron (MLP) from the SMILES predictor. The output is a two-class classification.
+- `class MLP(nn.Module)`: Defines the multilayer perceptron (MLP) from the SMILES predictor. The output is a two-class classification. **It must be the same model architecture as in the loaded SMILES predictor mlp model**.
 
-- `def calculate_descriptors(smiles)`: Converts a SMILES string into an RDKit molecule object and calculates a variety of chemical descriptors.
+- `def calculate_descriptors(smiles)`: Converts a SMILES string into an RDKit molecule object and calculates a variety of chemical descriptors. **They must be the same descriptors as in the loaded SMILES predictor mlp model.**
 
 - `def evaluate_smiles(smiles, mlp_model, tokenizer, vocabulary)`: Evaluates them with the MLP and returns the prediction. The function returns either **1 (AXL-classified)** or **0 (not AXL-classified)**, depending on the result of the MLP prediction.
+
+
+
+
+### Define the Phase 2 Model Structure
+
+- `vocabulary = FixedVocabulary()`: The vocabulary is initialised. The vocabulary from the pre-training (phase 1) is used.
+
+- `tokenizer = DeepSMILESTokenizer(vocabulary)`: The tokeniser is initialised. The tokaniser from the pre-training (phase 1) is used.
+
+- `smiles_lstm_model = SmilesLSTM(vocabulary, tokenizer)`: An instance of the SmilesLSTM model is created. The same LSTM model with the same structure from phase 1 is used. This model uses the initiated vocabulary and the tokeniser.
+
+- `smiles_lstm_model.load_pretrained_model(trained_lstm_path)`: The pre-trained model is loaded. The previously trained weights and parameters of the model are loaded into the current instance.
+
+- `input_size = 2048 + 46`: The input size for the MLP model is defined. It is made up of the features of the Morgan fingerprints (2048 bits) and other molecular descriptors (46 features).
+
+- `mlp_model = load_mlp_model(trained_mlp_path, input_size)`: The SMILES Predictor model is loaded into the current instance. The model is set on the defined mlp and on the `input_size`.
 
 
 
@@ -545,14 +592,8 @@ else:
 
 
 ```bash
-trainer_phase2 = SmilesTrainerPhase2(
-        epochs=120,
-        learning_rate=0.00002,
-        batch_size=32,
-        save_model_path='/****/****/finetuned_model2507.pth',
-        num_generated_smiles=400,
-        reward_scale=1
-    )
+class SmilesTrainerPhase2:
+    def __init__(self, model, validator_model, num_generated_smiles=NUM_GENERATED_SMILES, epochs=FINE_TUNE_EPOCHS, learning_rate=FINE_TUNE_LEARNING_RATE, batch_size=FINE_TUNE_BATCH_SIZE, save_model_path=FINE_TUNE_SAVE_MODEL_PATH, reward_scale=REWARD_SCALE): 
 ```
 
 - Key Input Parameters:
@@ -578,13 +619,15 @@ trainer_phase2 = SmilesTrainerPhase2(
 
 
 
+
 ### Plotting
 
 - By plotting the generated and classified count and accuracy metrics over the training epochs, you can gain deeper insights into the behaviour of the model during the training process, evaluating model performance and react accordingly. 
 
 
 ```bash
-    def plot_accuracy(train_accuracy, total_accuracy, epochs):
+    def plot_accuracy(train_accuracy, total_accuracy):
+        epochs = range(1, len(train_accuracy) + 1)
         plt.figure(figsize=(14, 6))
         plt.plot(epochs, train_accuracy, label='Training Accuracy')
         plt.plot(epochs, total_accuracy, label='Total Accuracy')
@@ -597,7 +640,8 @@ trainer_phase2 = SmilesTrainerPhase2(
 ```
 
 ```bash
-    def plot_generated_smiles(generated_smiles_counts, axl_classified_counts, epochs):
+    def plot_generated_smiles(generated_smiles_counts, axl_classified_counts):
+        epochs = range(1, len(generated_smiles_counts) + 1)
         plt.figure(figsize=(14, 6))
         plt.plot(epochs, generated_smiles_counts, label='Generated SMILES')
         plt.plot(epochs, axl_classified_counts, label='AXL Classified SMILES')
@@ -607,9 +651,6 @@ trainer_phase2 = SmilesTrainerPhase2(
         plt.legend()
         plt.grid(True)
         plt.show()
-
-    plt.tight_layout()
-    plt.show()
 ```
 
 - `plot_accuracy`: Visualises the accuracy of the model during training. The training accuracy and the overall accuracy are visualised.
@@ -617,7 +658,11 @@ trainer_phase2 = SmilesTrainerPhase2(
 - `plot_generated_smiles`: Visualises the ratio of generated SMILES and AXL-classified SMILES across the epochs.
 
 
-## SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation
+
+
+
+
+## Train SMILES Predictor using a MLP and Morgan Fingerprints, Molecule Descriptors for validation
 
 
 ### Device Selection
@@ -806,9 +851,8 @@ Target = 0: Other molecules
 
 
 ```bash
-batch_size = 32
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 ```
 
 - Key Input Parameters:
@@ -887,7 +931,7 @@ You can adjust the layer-size or add more layers to the MLP if you want to impro
 ```bash
 criterion = F.cross_entropy
 criterion = focal_CE_loss
-optimizer = optim.Adam(model.parameters(), lr=0.00005)
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 ```
 
 - `optimizer = optim.Adam(model.parameters())`: Defines the optimiser that updates the weights of the model based on the calculated gradients. The **Adam optimiser** is used here
@@ -904,9 +948,9 @@ optimizer = optim.Adam(model.parameters(), lr=0.00005)
 - A technique used to stop model training when certain criteria are met. In this case, training is stopped as soon as the specified accuracy targets for both classes (**CHEMBL** and **AXL**) in the test dataset are met. This ensures that the model performs well for both the majority class (**CHEMBL**) and the minority class (**AXL**), which is particularly important when the accurate classification of the minority class is of high importance.
 
 ```bash
-early_stopping_active = True 
-target_accuracy_chembl = 97.5
-target_accuracy_axl = 99.5
+early_stopping_active = EARLY_STOPPING_ACTIVE 
+target_accuracy_chembl = TARGET_ACCURACY_CHEMBL
+target_accuracy_axl = TARGET_ACCURACY_AXL
 ```
 
 - Key Input Parameters:
@@ -926,12 +970,12 @@ target_accuracy_axl = 99.5
 
 
 ```bash
-num_epochs = 150
+num_epochs = NUM_EPOCHS
 ```
 
 - Key Input Parameters:
 
-    - `num_epochs (int)`: Number of training runs.
+    - `num_epochs (int)`: Number of maximum training runs.
      
 - **Epoch Initialisation:**
     
@@ -985,7 +1029,7 @@ num_epochs = 150
 
 
 ```bash
-save_model_path = 'model_predictor_0407.pth'
+save_model_path = SAVE_MODEL_PATH
 ```
 
 - `save_model_path (str)`: This path specifies where the model is to be saved after training. It should always be filled with a valid path otherwise the model won`t be saved.
@@ -1077,6 +1121,19 @@ def plot_feature_importance(top_features, top_weights, title):
 </p>
 
 <img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/feature_plott_descriptors.png" width="450" height="300">
+
+
+
+
+### Running SMILES Generator
+
+
+
+
+
+### Running SMILES Predictor
+
+
 
 
 ## References
