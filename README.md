@@ -529,7 +529,7 @@ If the SMILES Predictor isn't ready pause here and continue later after training
 
 
 
-### Define The Trainer Phase2
+### Define The Trainer Phase 2
 
 - This class implements the fine-tuning of the SMILES Generator model with a reinforcement learning approach based on classification by the SMILES Predictor model.
 
