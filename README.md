@@ -194,7 +194,7 @@ This will give you a overview of the **DeepSMILESGenerator** and **DeepSMILESPre
 
 This will give you a complete overview of the **DeepSMILESGenerator** and **DeepSMILESPredictor** Workflow:
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflowV3.png" width="550" height="1180">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflowV4.png" width="650" height="1180">
 
 
 
@@ -366,8 +366,14 @@ Target = 0: Other molecules
 
 
 
+axl_data = df[df['Target'] == 1]
+compound_data = df[df['Target'] == 0]
 
-### Define the Dataset
+axl_data_scaled = pd.concat([axl_data] * AXL_MULTIPLIER, ignore_index=True)
+compound_data_scaled = pd.concat([compound_data] * COMPOUND_MULTIPLIER, ignore_index=True)
+
+
+### Define the Dataset (Oversampling)
 
 - Process of splitting the data into training and test sets, converting this data into PyTorch tensors and creating DataLoaders to efficiently process the data during training
 
@@ -375,7 +381,12 @@ Target = 0: Other molecules
 
     - `axl_data = df[df['Target'] == 1]`: A subset of the DataFrame `df` is created, which only contains the data rows in which the Target column has the value `1`. This means that axl_data only represents the data points that are classified as AXL kinase inhibitors.
 
-    - `df = pd.concat([df, axl_data] * 3)`: Duplicates the data from `axl_data` three times and inserts it back into the original DataFrame `df`.
+    - `compound_data = df[df['Target'] == 0]`: A subset of the DataFrame `df` is created, this time it only contains the data with the value `0`. This means that compound_data only represents the data points that are classified as other molecules.
+
+    - `axl_data_scaled = pd.concat([axl_data] * AXL_MULTIPLIER, ignore_index=True)`: Duplicates the data from axl_data `AXL_MULTIPLIER` times and inserts it back into the original DataFrame `df`.
+
+    - `compound_data_scaled = pd.concat([compound_data] * COMPOUND_MULTIPLIER, ignore_index=True)`: Duplicates the data from compound_data `COMPOUND_MULTIPLIER` times and inserts it back into the original DataFrame `df`. 
+
 
 - `X = df.drop(columns=["SMILES", "Target"])`: Removes the columns "SMILES" and "Target" from the DataFrame `df` to create the feature matrix `X`. This matrix contains all numerical descriptors and fingerprints that serve as input data for the model.
 
@@ -397,6 +408,9 @@ test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
 - `Batch_size (int)`: Sets the size of the batches which means that the data is processed in batches of x each.
 
+- `AXL_MULTIPLIER (int)`: Sets how often the AXL-Kinase-Inhibitor-Dataset should multiplied.
+
+- `COMPOUND_MULTIPLIER`: Sets how often the Compound-Dataset should multiplied.
 
 
 
@@ -552,14 +566,13 @@ num_epochs = NUM_EPOCHS
 
 1 **Extract the weights**: The function extracts the weights of the first layer (`fc1`) of the model and calculates the mean absolute weights over all neurons.
 
-2 **Filtering the features**: If a `prefix` is specified, only the features whose names start with this prefix are considered. Otherwise, features beginning with "FP_" are excluded (typical for fingerprints).
+2 **Filtering the features**: Filter the descriptors based on the `prefix` in molecular descriptors and molecular fingerprints (beginning with "FP_").
 
-3 **Sort by importance**: Features are sorted by their mean absolute weights.
+3. **Calculating the Fingerprint Mean Weight**: The function calculates the mean of the absolute values of weights for features with the prefix FP_, which represent the molecular fingerprints. This average value represents a general importance level for the entire fingerprint set, rather than individual fingerprints.
 
-4 **Select top features**: If `top_n` is specified, only the most important `top_n` features are returned.
+4. **Combine Fingerprint Mean with Descriptors**:  The mean value of the fingerprints (labeled as ECFPs) is combined with individual descriptor names and their calculated weights, creating a unified feature importance list.
 
-5 **Output**: The function returns the names and weights of the most important features.
-
+5. **Output**: The function returns a tuple containing the list of feature names (ECFPs along with each descriptor) and their respective importance values, sorted by their calculated importance.
 
 
 
@@ -631,12 +644,17 @@ def plot_confusion_matrix(mdl, data, class_names=None, device=torch.device("cpu"
 
 ```bash
 def plot_feature_importance(top_features, top_weights, title):
-    plt.figure(figsize=(14, 10))
-    plt.barh(range(len(top_features)), top_weights[::-1], align='center')
-    plt.yticks(range(len(top_features)), top_features[::-1], fontsize=8)
-    plt.xlabel('Mean Absolute Weight')
-    plt.title(title)
-    plt.grid(True)
+    sorted_indices = np.argsort(top_weights)[::-1]
+    sorted_features = np.array(top_features)[sorted_indices]
+    sorted_weights = np.array(top_weights)[sorted_indices]
+    plt.figure(figsize=(14, 18), dpi=600)
+    plt.barh(range(len(sorted_features)), sorted_weights[::-1], align='center', color='#4d3975')
+    plt.yticks(range(len(sorted_features)), sorted_features[::-1], fontsize=14)
+    plt.xlabel('Mean Absolute Weight', fontsize=18)
+    plt.xticks(fontsize=16)
+    plt.title(title, fontsize=20)
+    plt.grid(False)
+    plt.tight_layout()
     plt.show()
 ```
 
