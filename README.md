@@ -185,7 +185,7 @@ REWARD_SCALE = 1
 
 This will give you a overview of the **DeepSMILESGenerator** and **DeepSMILESPredictor** training structure, all existing scripts in the repository and all required files:
 
-![Project Training Structure](https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/project_structureV2.png)
+![Project Training Structure](https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/project_structureV3.png)
 
 
 
@@ -194,7 +194,7 @@ This will give you a overview of the **DeepSMILESGenerator** and **DeepSMILESPre
 
 This will give you a complete overview of the **DeepSMILESGenerator** and **DeepSMILESPredictor** Workflow:
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflowV2.png" width="500" height="1180">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflowV3.png" width="550" height="1180">
 
 
 
