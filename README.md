@@ -194,7 +194,7 @@ This will give you a overview of the **DeepSMILESGenerator** and **DeepSMILESPre
 
 This will give you a complete overview of the **DeepSMILESGenerator** and **DeepSMILESPredictor** Workflow:
 
-<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflowV4.png" width="650" height="1180">
+<img src="https://github.com/Schockwav3/SMILESGeneratorPredictor/blob/main/Pictures/workflowV4.png" width="550" height="900">
 
 
 
@@ -410,7 +410,7 @@ test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
 - `AXL_MULTIPLIER (int)`: Sets how often the AXL-Kinase-Inhibitor-Dataset should multiplied.
 
-- `COMPOUND_MULTIPLIER`: Sets how often the Compound-Dataset should multiplied.
+- `COMPOUND_MULTIPLIER (int)`: Sets how often the Compound-Dataset should multiplied.
 
 
 
